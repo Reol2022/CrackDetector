@@ -1,27 +1,40 @@
 # SmartTunnel-CrackDetector
 
-这是一个用于检测隧道裂缝的智能系统项目。该项目旨在开发和实现一种高效的隧道裂缝检测方法，利用图像处理和机器学习技术对隧道表面进行自动化检测，提高检测精度和效率。
+## 🌟项目简介
+SmartTunnel Crack Detector 是一个专为隧道工程设计的智能裂缝检测系统，结合传统计算机视觉和现代深度学习技术，实现裂缝的自动识别、量化分析和可视化报告。
 
-## 功能特点
+## 项目目录
 
-- **图像采集与处理**：支持从多种设备获取隧道表面图像，并进行预处理以增强图像质量。
-- **裂缝识别**：基于先进的图像识别算法，精准识别隧道表面的裂缝。
-- **数据分析与报告**：提供裂缝分析结果，并生成可视化报告，便于工程人员评估。
+SmartTunnel-CrackDetector-Python/  
+├── src/  
+│   ├── traditional/   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # 传统CV方法  
+│   ├── deep_learning/  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # 深度学习模型  
+│   ├── utils/      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    # 工具函数  
+│   └── web/         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # Web界面(可选)   
+├── tests/              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 测试代码  
+├── docs/            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # 文档  
+├── data/             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # 数据集  
+└── requirements.txt  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Python依赖
 
-## 使用技术
+## 功能特性
+🎯 双引擎检测：传统CV + 深度学习混合检测策略
 
-- 图像处理技术（如OpenCV等）
-- 机器学习算法（如卷积神经网络等）
-- 数据可视化工具
+📊 量化分析：裂缝长度、宽度、面积精确测量
 
-## 安装与使用
+🖼️ 智能可视化：检测结果自动标注与对比展示
 
-请参考项目文档或源码中的说明进行安装和配置。
+🚀 高性能：优化算法，支持批量处理
 
-## 贡献指南
+📈 学术价值：为智慧隧道研究提供技术支撑
 
-欢迎贡献代码和想法。请遵循项目的贡献指南提交 Pull Request。
+## 快速开始
 
-## 许可证
+### 环境要求
+Python 3.8+ - 主要编程语言
 
-本项目遵循 MIT 许可证。详情请查看 LICENSE 文件。
+OpenCV - 图像处理与计算机视觉
+
+PyTorch - 深度学习框架
+
+NumPy & Pandas - 科学计算与数据分析
+
