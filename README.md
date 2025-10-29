@@ -10,6 +10,15 @@
 - 裂缝检测结果可视化
 - 简单的用户界面
 
+## 项目结构
+
+- `data/`: 数据集目录
+- `models/`: 模型定义
+- `utils/`: 工具函数
+- `train.py`: 模型训练脚本
+- `test.py`: 模型测试脚本
+
+
 ## 安装依赖
 
 ```bash
@@ -38,12 +47,3 @@ python test.py --image_path path/to/your/image.jpg
 python app.py
 ```
 
-## 项目结构
-
-- `data/`: 数据集目录
-- `models/`: 模型定义
-- `utils/`: 工具函数
-- `train.py`: 模型训练脚本
-- `test.py`: 模型测试脚本
-- `app.py`: 用户界面
-- `download_dataset.py`: 数据集下载脚本
