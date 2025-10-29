@@ -8,12 +8,13 @@ class CrackDetector(nn.Module):
     """
     def __init__(self, num_classes=2):
         super(CrackDetector, self).__init__()
-        # 使用预训练的ResNet50作为特征提取器
-        self.resnet = models.resnet50(pretrained=True)
+        # 使用ResNet50作为特征提取器，但不下载预训练权重
+        self.resnet = models.resnet50(pretrained=False)
         
-        # 冻结部分层以加快训练
-        for param in list(self.resnet.parameters())[:-20]:
-            param.requires_grad = False
+        # 不冻结层，从头开始训练
+        # 如果需要冻结层，可以在加载预训练权重后取消注释下面的代码
+        # for param in list(self.resnet.parameters())[:-20]:
+        #     param.requires_grad = False
             
         # 替换最后的全连接层
         in_features = self.resnet.fc.in_features

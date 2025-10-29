@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SmartTunnel-CrackDetector.iml" filepath="$PROJECT_DIR$/.idea/SmartTunnel-CrackDetector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CrackDetector.iml" filepath="$PROJECT_DIR$/.idea/CrackDetector.iml" />
     </modules>
   </component>
 </project>
