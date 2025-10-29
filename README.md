@@ -1,40 +1,49 @@
-# SmartTunnel-CrackDetector
+# 智慧隧道裂缝检测系统
 
-## 🌟项目简介
-SmartTunnel Crack Detector 是一个专为隧道工程设计的智能裂缝检测系统，结合传统计算机视觉和现代深度学习技术，实现裂缝的自动识别、量化分析和可视化报告。
+这是一个基于深度学习的隧道裂缝检测系统，可以自动识别隧道壁上的裂缝。
 
-## 项目目录
+## 功能特点
 
-SmartTunnel-CrackDetector-Python/  
-├── src/  
-│   ├── traditional/   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # 传统CV方法  
-│   ├── deep_learning/  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # 深度学习模型  
-│   ├── utils/      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    # 工具函数  
-│   └── web/         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # Web界面(可选)   
-├── tests/              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 测试代码  
-├── docs/            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  # 文档  
-├── data/             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # 数据集  
-└── requirements.txt  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Python依赖
+- 自动下载和处理隧道裂缝数据集
+- 基于深度学习的裂缝检测模型
+- 模型训练与评估
+- 裂缝检测结果可视化
+- 简单的用户界面
 
-## 功能特性
-🎯 双引擎检测：传统CV + 深度学习混合检测策略
+## 安装依赖
 
-📊 量化分析：裂缝长度、宽度、面积精确测量
+```bash
+pip install -r requirements.txt
+```
 
-🖼️ 智能可视化：检测结果自动标注与对比展示
+## 使用方法
 
-🚀 高性能：优化算法，支持批量处理
+1. 下载数据集：
+```bash
+python download_dataset.py
+```
 
-📈 学术价值：为智慧隧道研究提供技术支撑
+2. 训练模型：
+```bash
+python train.py
+```
 
-## 快速开始
+3. 测试模型：
+```bash
+python test.py --image_path path/to/your/image.jpg
+```
 
-### 环境要求
-Python 3.8+ - 主要编程语言
+4. 启动用户界面：
+```bash
+python app.py
+```
 
-OpenCV - 图像处理与计算机视觉
+## 项目结构
 
-PyTorch - 深度学习框架
-
-NumPy & Pandas - 科学计算与数据分析
-
+- `data/`: 数据集目录
+- `models/`: 模型定义
+- `utils/`: 工具函数
+- `train.py`: 模型训练脚本
+- `test.py`: 模型测试脚本
+- `app.py`: 用户界面
+- `download_dataset.py`: 数据集下载脚本
