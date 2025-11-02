@@ -1,0 +1,39 @@
+# 模型文件
+checkpoints/*.pth
+
+# 数据集文件 - 保留目录但忽略内容
+data/SDNET2018_extracted/*
+data/train/*
+data/val/*
+
+# 但保留空目录的标记文件（可选）
+!data/SDNET2018_extracted/.gitkeep
+!data/train/.gitkeep
+!data/val/.gitkeep
+!checkpoints/.gitkeep
+
+# 其他需要忽略的文件
+*.pkl
+*.pickle
+*.zip
+*.tar.gz
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
