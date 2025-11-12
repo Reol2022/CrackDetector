@@ -109,7 +109,7 @@ def train(args):
     torch.save(model.state_dict(), os.path.join(args.checkpoint_dir, 'final_model.pth'))
     print("训练完成!")
 
- if __name__ == '__main__':
+if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Crack Detection Training')
      parser.add_argument('--data_dir', type=str, default='data', help='数据集根目录（包含 train/ 与 val/ 子目录）')
      parser.add_argument('--epochs', type=int, default=30, help='训练轮数')
@@ -122,7 +122,8 @@ def train(args):
      parser.add_argument('--imgsz', type=int, default=224, help='YOLOv8输入尺寸（默认224）')
      args = parser.parse_args()
 
-    if not os.path.exists(args.checkpoint_dir):
+
+if not os.path.exists(args.checkpoint_dir):
         os.makedirs(args.checkpoint_dir)
 
-    train(args)
+train(args)
