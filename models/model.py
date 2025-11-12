@@ -1,117 +1,42 @@
 import torch
 import torch.nn as nn
-import torchvision.models as models
+from torchvision import models
 
 class CrackDetector(nn.Module):
-    """
-    裂缝检测模型，基于预训练的ResNet50
-    """
-    def __init__(self, num_classes=2):
+    def __init__(self, num_classes=2, pretrained=True):
         super(CrackDetector, self).__init__()
-        # 使用ResNet50作为特征提取器，但不下载预训练权重
-        self.resnet = models.resnet50(pretrained=False)
+        self.resnet50 = models.resnet50(pretrained=False) # pretrained=False因为我们要加载本地权重
         
-        # 不冻结层，从头开始训练
-        # 如果需要冻结层，可以在加载预训练权重后取消注释下面的代码
-        # for param in list(self.resnet.parameters())[:-20]:
-        #     param.requires_grad = False
-            
-        # 替换最后的全连接层
-        in_features = self.resnet.fc.in_features
-        self.resnet.fc = nn.Sequential(
-            nn.Linear(in_features, 512),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(512, num_classes)
-        )
+        # 尝试加载本地预训练权重
+        if pretrained:
+            try:
+                self.resnet50.load_state_dict(torch.load('checkpoints/resnet50-0676ba61.pth'), strict=False)
+                print("成功加载本地预训练权重: checkpoints/resnet50-0676ba61.pth")
+            except FileNotFoundError:
+                print("警告: 未找到本地预训练权重 'checkpoints/resnet50-0676ba61.pth'。模型将从头开始训练。")
+
+        # 冻结所有层
+        for param in self.resnet50.parameters():
+            param.requires_grad = False
+
+        # 只解冻layer4和全连接层
+        for param in self.resnet50.layer4.parameters():
+            param.requires_grad = True
+
+        # 替换全连接层以匹配我们的任务
+        num_ftrs = self.resnet50.fc.in_features
+        self.resnet50.fc = nn.Linear(num_ftrs, num_classes)
         
+        # 确保新的全连接层是可训练的
+        for param in self.resnet50.fc.parameters():
+            param.requires_grad = True
+
     def forward(self, x):
-        return self.resnet(x)
+        return self.resnet50(x)
 
-
-class UNet(nn.Module):
-    """
-    UNet模型用于裂缝分割
-    """
-    def __init__(self, n_channels=3, n_classes=1):
-        super(UNet, self).__init__()
-        
-        # 下采样路径
-        self.inc = self._double_conv(n_channels, 64)
-        self.down1 = self._down(64, 128)
-        self.down2 = self._down(128, 256)
-        self.down3 = self._down(256, 512)
-        self.down4 = self._down(512, 512)
-        
-        # 上采样路径
-        self.up1 = self._up(1024, 256)
-        self.up2 = self._up(512, 128)
-        self.up3 = self._up(256, 64)
-        self.up4 = self._up(128, 64)
-        
-        # 输出层
-        self.outc = nn.Conv2d(64, n_classes, kernel_size=1)
-        self.sigmoid = nn.Sigmoid()
-        
-    def forward(self, x):
-        # 下采样路径
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x5 = self.down4(x4)
-        
-        # 上采样路径
-        x = self.up1(x5, x4)
-        x = self.up2(x, x3)
-        x = self.up3(x, x2)
-        x = self.up4(x, x1)
-        
-        # 输出
-        x = self.outc(x)
-        x = self.sigmoid(x)
-        
-        return x
-    
-    def _double_conv(self, in_channels, out_channels):
-        return nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
-    
-    def _down(self, in_channels, out_channels):
-        return nn.Sequential(
-            nn.MaxPool2d(2),
-            self._double_conv(in_channels, out_channels)
-        )
-    
-    def _up(self, in_channels, out_channels):
-        return nn.Module()  # 占位，下面会重写
-    
-    def _up(self, in_channels, out_channels):
-        return nn.Sequential(
-            nn.ConvTranspose2d(in_channels // 2, in_channels // 2, kernel_size=2, stride=2),
-            self._double_conv(in_channels, out_channels)
-        )
-
-
-def get_model(model_type="classification", **kwargs):
-    """
-    获取模型实例
-    
-    Args:
-        model_type: 模型类型，可选 "classification" 或 "segmentation"
-        
-    Returns:
-        模型实例
-    """
-    if model_type == "classification":
-        return CrackDetector(**kwargs)
-    elif model_type == "segmentation":
-        return UNet(**kwargs)
+def get_model(model_name, num_classes=2, pretrained=True, **kwargs):
+    if model_name == 'CrackDetector':
+        # 忽略kwargs, 因为这个版本不使用它们
+        return CrackDetector(num_classes=num_classes, pretrained=pretrained)
     else:
-        raise ValueError(f"不支持的模型类型: {model_type}")
+        raise ValueError(f"模型 '{model_name}' 不支持")

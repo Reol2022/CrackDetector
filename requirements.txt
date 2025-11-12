@@ -9,3 +9,4 @@ pillow>=8.0.1
 albumentations>=0.5.2
 tensorboard>=2.3.0
 gdown>=4.4.0
+ultralytics>=8.0.0

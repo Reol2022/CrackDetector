@@ -151,18 +151,14 @@ class CrackDetectorApp:
         new_size = (int(w*ratio), int(h*ratio))
         return image.resize(new_size, Image.LANCZOS)
     
-    def preprocess_image(self, image_path):
+    def preprocess_image(self, image):
         """预处理图像"""
         transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((224, 224)),  # 与训练时保持一致的尺寸调整
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
-        
-        image = Image.open(image_path).convert('RGB')
-        image_tensor = transform(image).unsqueeze(0)  # 添加批次维度
-        
-        return image_tensor
+        return transform(image)
     
     def detect_crack(self):
         """检测裂缝"""
@@ -173,8 +169,10 @@ class CrackDetectorApp:
         try:
             self.status_bar.config(text="正在检测...")
             
-            # 预处理图像
-            image_tensor = self.preprocess_image(self.current_image_path)
+            # 加载并预处理图像
+            image = Image.open(self.current_image_path).convert('RGB')
+            image_tensor = self.preprocess_image(image)
+            image_tensor = image_tensor.unsqueeze(0)  # 添加批次维度
             
             # 进行预测
             with torch.no_grad():
