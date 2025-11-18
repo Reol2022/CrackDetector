@@ -13,12 +13,14 @@ from models.model import get_model
 class CrackDetectorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("智慧隧道裂缝检测系统")
+        self.root.title("裂缝检测")
         self.root.geometry("800x600")
         self.root.configure(bg="#f0f0f0")
         
         # 设置设备
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # 默认模式：分类/检测/分割
+        self.mode_var = tk.StringVar(value="分类")
         
         # 加载模型
         self.model = None
@@ -32,18 +34,57 @@ class CrackDetectorApp:
         self.current_image = None
         
     def load_model(self):
-        """加载模型"""
+        """加载模型（根据模式）"""
         try:
-            model_path = "checkpoints/best_model.pth"
-            if not os.path.exists(model_path):
-                messagebox.showwarning("警告", "模型文件不存在，请先训练模型！")
-                return
-            
-            self.model = get_model(model_type="classification", num_classes=2)
-            self.model.load_state_dict(torch.load(model_path, map_location=self.device))
-            self.model = self.model.to(self.device)
-            self.model.eval()
-            print("模型加载成功！")
+            mode = self.mode_var.get()
+            if mode == "分类":
+                # 优先使用 ResNet50（本地训练的分类权重），否则使用 YOLOv8 分类
+                resnet_path = "checkpoints/best_model.pth"
+                if os.path.exists(resnet_path):
+
+                    
+                    # 加载 ResNet50 分类模型
+                    self.model = get_model(model_name="CrackDetector", model_type="classification", num_classes=2, pretrained=False)
+                    # 将权重映射到当前设备并加载，然后把模型移到设备，避免 CPU/GPU 不一致
+                    state = torch.load(resnet_path, map_location=self.device)
+                    self.model.load_state_dict(state if isinstance(state, dict) else state)
+                    self.model = self.model.to(self.device)
+                    self.model.eval()
+                    print(f"已加载 ResNet50 分类模型: {resnet_path}")
+                else:
+                    cls_path = "checkpoints/best_yolov8.pt"
+                    if os.path.exists(cls_path):
+                        weights = cls_path
+                    else:
+                        fallback = "yolov8n-cls.pt"
+                        weights = fallback
+                        messagebox.showinfo("提示", f"未找到 {cls_path}，改用 {fallback} 进行分类推理。")
+                    # 加载 YOLOv8 分类模型
+                    self.model = get_model(model_name="yolov8", model_type="classification", weights=weights, device=self.device)
+                    self.model.eval()
+            elif mode == "检测":
+                det_path = "checkpoints/best_yolov8_detect.pt"
+                if os.path.exists(det_path):
+                    weights = det_path
+                else:
+                    fallback = "yolov8n.pt"
+                    weights = fallback
+                    messagebox.showinfo("提示", f"未找到 {det_path}，改用 {fallback} 进行检测推理。")
+                self.model = get_model(model_name="yolov8-detect", weights=weights, device=self.device)
+                self.model.eval()
+            elif mode == "分割":
+                seg_path = "checkpoints/best_yolov8_seg.pt"
+                if os.path.exists(seg_path):
+                    weights = seg_path
+                else:
+                    fallback = "yolov8n-seg.pt"
+                    weights = fallback
+                    messagebox.showinfo("提示", f"未找到 {seg_path}，改用 {fallback} 进行分割推理。")
+                self.model = get_model(model_name="yolov8-seg", weights=weights, device=self.device)
+                self.model.eval()
+            else:
+                raise ValueError(f"不支持的模式: {mode}")
+            print(f"模型加载成功（模式: {mode}）！")
         except Exception as e:
             messagebox.showerror("错误", f"加载模型失败: {str(e)}")
     
@@ -53,7 +94,7 @@ class CrackDetectorApp:
         title_frame = tk.Frame(self.root, bg="#4a7abc", height=60)
         title_frame.pack(fill=tk.X)
         
-        title_label = tk.Label(title_frame, text="智慧隧道裂缝检测系统", font=("Arial", 18, "bold"), 
+        title_label = tk.Label(title_frame, text="裂缝检测", font=("Arial", 18, "bold"), 
                               bg="#4a7abc", fg="white")
         title_label.pack(pady=10)
         
@@ -72,6 +113,15 @@ class CrackDetectorApp:
         # 右侧控制区域
         control_frame = tk.Frame(main_frame, bg="#f0f0f0", width=300)
         control_frame.pack(side=tk.RIGHT, padx=10, fill=tk.BOTH)
+
+        # 模式选择
+        mode_frame = tk.LabelFrame(control_frame, text="任务模式", bg="#f0f0f0", font=("Arial", 12))
+        mode_frame.pack(fill=tk.X, pady=10, ipady=5)
+        tk.Label(mode_frame, text="选择模式：", bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
+        mode_options = ["分类", "检测", "分割"]
+        mode_menu = tk.OptionMenu(mode_frame, self.mode_var, *mode_options, command=lambda _: self.on_mode_change())
+        mode_menu.config(width=10)
+        mode_menu.pack(side=tk.LEFT, padx=5)
         
         # 按钮区域
         button_frame = tk.Frame(control_frame, bg="#f0f0f0")
@@ -161,44 +211,127 @@ class CrackDetectorApp:
         return transform(image)
     
     def detect_crack(self):
-        """检测裂缝"""
+        """检测裂缝/位置/掩膜（按模式）"""
         if not self.current_image_path or not self.model:
             messagebox.showwarning("警告", "请先选择图像并确保模型已加载！")
             return
-        
+
         try:
             self.status_bar.config(text="正在检测...")
-            
-            # 加载并预处理图像
+
+            # 加载图像
             image = Image.open(self.current_image_path).convert('RGB')
-            image_tensor = self.preprocess_image(image)
-            image_tensor = image_tensor.unsqueeze(0)  # 添加批次维度
-            
-            # 进行预测
-            with torch.no_grad():
-                outputs = self.model(image_tensor.to(self.device))
-                _, preds = torch.max(outputs, 1)
-                probs = torch.nn.functional.softmax(outputs, dim=1)
-            
-            prediction = preds.item()
-            probabilities = probs.cpu().numpy()[0]
-            
-            # 更新结果显示
-            if prediction == 1:
-                self.result_label.config(text="检测结果: 有裂缝", fg="red")
-                self.highlight_button.config(state=tk.NORMAL)
-            else:
-                self.result_label.config(text="检测结果: 无裂缝", fg="green")
+            mode = self.mode_var.get()
+
+            if mode == "分类":
+                if hasattr(self.model, 'predict'):
+                    prediction, probabilities = self.model.predict(image)
+                    if probabilities is None:
+                        probabilities = np.array([0.0, 0.0])
+                else:
+                    image_tensor = self.preprocess_image(image)
+                    image_tensor = image_tensor.unsqueeze(0)
+                    with torch.no_grad():
+                        outputs = self.model(image_tensor.to(self.device))
+                        _, preds = torch.max(outputs, 1)
+                        probs = torch.nn.functional.softmax(outputs, dim=1)
+                    prediction = preds.item()
+                    probabilities = probs.cpu().numpy()[0]
+
+                # 更新结果显示
+                if prediction == 1:
+                    self.result_label.config(text="检测结果: 有裂缝", fg="red")
+                    self.highlight_button.config(state=tk.NORMAL)
+                else:
+                    self.result_label.config(text="检测结果: 无裂缝", fg="green")
+                    self.highlight_button.config(state=tk.DISABLED)
+
+                if isinstance(probabilities, np.ndarray) and probabilities.size >= 2:
+                    self.prob_label_no_crack.config(text=f"无裂缝概率: {probabilities[0]*100:.2f}%")
+                    self.prob_label_crack.config(text=f"有裂缝概率: {probabilities[1]*100:.2f}%")
+                else:
+                    self.prob_label_no_crack.config(text="无裂缝概率: -")
+                    self.prob_label_crack.config(text="有裂缝概率: -")
+
+            elif mode == "检测":
+                if not hasattr(self.model, 'predict'):
+                    messagebox.showerror("错误", "当前模式需要 YOLOv8 检测模型。")
+                    return
+                r = self.model.predict(image)
+                im = np.array(image.convert('RGB'))
+                has_box = False
+                if getattr(r, 'boxes', None) is not None:
+                    for box in r.boxes:
+                        has_box = True
+                        b = box.xyxy[0].cpu().numpy()
+                        conf = float(box.conf[0].cpu().numpy()) if hasattr(box, 'conf') else 0.0
+                        cls_id = int(box.cls[0].cpu().numpy()) if hasattr(box, 'cls') else 0
+                        name = r.names.get(cls_id, 'crack') if hasattr(r, 'names') else 'crack'
+                        x1, y1, x2, y2 = map(int, b)
+                        cv2.rectangle(im, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                        cv2.putText(im, f"{name} {conf:.2f}", (x1, max(0, y1-5)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 2)
+                result_pil = Image.fromarray(im)
+                result_pil = self.resize_image(result_pil, (380, 380))
+                photo = ImageTk.PhotoImage(result_pil)
+                self.image_label.config(image=photo)
+                self.image_label.image = photo
+                if has_box:
+                    self.result_label.config(text="检测结果: 有裂缝(检测)", fg="red")
+                else:
+                    self.result_label.config(text="检测结果: 无裂缝(检测)", fg="green")
+                self.prob_label_no_crack.config(text="无裂缝概率: -")
+                self.prob_label_crack.config(text="有裂缝概率: -")
                 self.highlight_button.config(state=tk.DISABLED)
-            
-            # 更新概率显示
-            self.prob_label_no_crack.config(text=f"无裂缝概率: {probabilities[0]*100:.2f}%")
-            self.prob_label_crack.config(text=f"有裂缝概率: {probabilities[1]*100:.2f}%")
-            
+
+            elif mode == "分割":
+                if not hasattr(self.model, 'predict'):
+                    messagebox.showerror("错误", "当前模式需要 YOLOv8 分割模型。")
+                    return
+                r = self.model.predict(image)
+                im = np.array(image.convert('RGB'))
+                overlay = im.copy()
+                alpha = 0.5
+                has_mask = False
+                if getattr(r, 'masks', None) is not None and r.masks is not None:
+                    masks = r.masks.data.cpu().numpy()
+                    for m in masks:
+                        has_mask = True
+                        overlay[m > 0.5] = (255, 0, 0)
+                    blended = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
+                else:
+                    blended = im
+                result_pil = Image.fromarray(blended)
+                result_pil = self.resize_image(result_pil, (380, 380))
+                photo = ImageTk.PhotoImage(result_pil)
+                self.image_label.config(image=photo)
+                self.image_label.image = photo
+                if has_mask:
+                    self.result_label.config(text="检测结果: 有裂缝(分割)", fg="red")
+                else:
+                    self.result_label.config(text="检测结果: 无裂缝(分割)", fg="green")
+                self.prob_label_no_crack.config(text="无裂缝概率: -")
+                self.prob_label_crack.config(text="有裂缝概率: -")
+                self.highlight_button.config(state=tk.DISABLED)
+            else:
+                messagebox.showerror("错误", f"未知模式: {mode}")
+                return
+
             self.status_bar.config(text="检测完成")
         except Exception as e:
             messagebox.showerror("错误", f"检测过程中出错: {str(e)}")
             self.status_bar.config(text="检测失败")
+
+    def on_mode_change(self):
+        """模式变更后重新加载模型"""
+        try:
+            self.load_model()
+            self.result_label.config(text="等待检测...", fg="black")
+            self.prob_label_no_crack.config(text="无裂缝概率: 0%")
+            self.prob_label_crack.config(text="有裂缝概率: 0%")
+            self.highlight_button.config(state=tk.DISABLED)
+            self.status_bar.config(text="模式已切换，请选择图像并检测")
+        except Exception as e:
+            messagebox.showerror("错误", f"切换模式失败: {str(e)}")
     
     def highlight_crack(self):
         """突出显示裂缝"""
