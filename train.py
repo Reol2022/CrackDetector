@@ -47,6 +47,46 @@ def train(args):
             print(f"复制YOLOv8最佳权重失败: {e}")
         return
 
+    # YOLOv8 检测训练分支（可选）
+    if args.use_yolov8_detect:
+        try:
+            from ultralytics import YOLO
+            import glob
+            import shutil
+        except ImportError:
+            raise ImportError("未找到 ultralytics，请先安装：pip install ultralytics")
+
+        os.makedirs(args.checkpoint_dir, exist_ok=True)
+        # 加载YOLOv8检测模型（支持本地权重或模型名称）
+        model = YOLO(args.detect_model)
+        print(f"使用YOLOv8检测模型: {args.detect_model}")
+
+        # 训练：data 指向 detect.yaml（或 Roboflow 的 data.yaml）
+        results = model.train(
+            data=args.detect_data,
+            epochs=args.detect_epochs,
+            imgsz=args.detect_imgsz,
+            batch=args.batch_size,
+            device=args.yolo_device,
+            workers=args.workers,
+            project=args.detect_project,
+            name=args.detect_name
+        )
+
+        # 复制最佳权重到 checkpoints
+        try:
+            candidates = glob.glob(os.path.join('runs', 'detect', '*', 'weights', 'best.pt'))
+            if candidates:
+                latest = max(candidates, key=os.path.getmtime)
+                dst = os.path.join(args.checkpoint_dir, 'best_yolov8_detect.pt')
+                shutil.copy2(latest, dst)
+                print(f"已保存最佳YOLOv8检测权重至: {dst}")
+            else:
+                print("未找到YOLOv8检测训练权重文件（runs/detect/*/weights/best.pt）")
+        except Exception as e:
+            print(f"复制YOLOv8检测最佳权重失败: {e}")
+        return
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # 加载数据集（使用工具函数，避免目录拼接错误）
@@ -130,6 +170,14 @@ if __name__ == '__main__':
     parser.add_argument('--imgsz', type=int, default=224, help='YOLOv8输入尺寸（默认224）')
     parser.add_argument('--yolo_device', type=str, default='0', help='YOLOv8设备：GPU编号如"0"，或"cpu"')
     parser.add_argument('--workers', type=int, default=4, help='数据加载并行度（workers），适当调小可降低CPU占用')
+    # YOLOv8 检测训练相关参数
+    parser.add_argument('--use_yolov8_detect', action='store_true', help='使用YOLOv8进行检测训练')
+    parser.add_argument('--detect_data', type=str, default='data/detect.yaml', help='检测数据集配置yaml路径')
+    parser.add_argument('--detect_model', type=str, default='yolov8n.pt', help='YOLOv8检测模型：名称或本地权重路径')
+    parser.add_argument('--detect_imgsz', type=int, default=640, help='YOLOv8检测输入尺寸（默认640）')
+    parser.add_argument('--detect_epochs', type=int, default=100, help='YOLOv8检测训练轮数（默认100）')
+    parser.add_argument('--detect_project', type=str, default='runs/detect', help='YOLOv8检测训练日志目录')
+    parser.add_argument('--detect_name', type=str, default='train_crack', help='YOLOv8检测训练任务名称')
     args = parser.parse_args()
 
     if not os.path.exists(args.checkpoint_dir):

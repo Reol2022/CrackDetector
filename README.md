@@ -38,7 +38,6 @@ CrackDetector/
 │       └── val/  
 ├── checkpoints/        &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   # 训练保存的模型权重  
 ├── runs/              &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;   # TensorBoard日志文件  
-├── yolov8/            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;    # YOLOv8训练输出  
 ├── train.py          &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;   # ResNet50训练脚本  
 ├── train_yolo.py    &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;    # YOLOv8训练脚本  
 ├── detect.py         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;    # 裂缝检测推理脚本  
@@ -115,30 +114,50 @@ data/
 地址： https://digitalcommons.usu.edu/all_datasets/48/
 - **自定义数据集**: 按照YOLO格式组织即可
 
+### Roboflow 数据集接入（detect.yaml 示例）
+使用 Roboflow 导出的 YOLOv8 数据集时，推荐在 `data/detect.yaml` 中配置根路径与子目录：
+
+```yaml
+path: "e:/我的项目/研究生/TRAE/CrackDetector/data/Crack Detection.v2-v2.yolov8"
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ["crack"]
+```
+
+- 训练命令中的 `--detect_data data/detect.yaml` 会读取上述配置
+- 如没有 `test` 集，可删除该行；`train/val` 即可完成训练与验证
+
 ## 🚀 快速开始
 
-### YOLOv8模型训练
+### YOLOv8检测训练（推荐）
 
-1. **基础训练**
+使用 `train.py` 直接进行检测训练，无需 `train_yolo.py`：
+
 ```bash
-python train_yolo.py --data dataset.yaml --epochs 100 --imgsz 640
+# GPU（自动选择可用设备）
+python train.py \
+  --use_yolov8_detect \
+  --detect_data data/detect.yaml \
+  --detect_model yolov8n.pt \
+  --detect_epochs 100 \
+  --detect_imgsz 640 \
+  --detect_project runs/detect \
+  --detect_name crack_yolov8
+
+# CPU
+python train.py \
+  --use_yolov8_detect \
+  --detect_data data/detect.yaml \
+  --detect_model yolov8n.pt \
+  --detect_epochs 100 \
+  --detect_imgsz 640
 ```
 
-2. **自定义训练**
-```bash
-python train_yolo.py \
-    --data dataset.yaml \
-    --epochs 150 \
-    --batch 16 \
-    --imgsz 640 \
-    --weights yolov8n.pt \
-    --name crack_detection
-```
-
-3. **从检查点恢复训练**
-```bash
-python train_yolo.py --resume yolov8/weights/last.pt
-```
+- 训练完成后：最佳权重会自动复制到 `checkpoints/best_yolov8_detect.pt`
+- 原有分类训练入口保持不变：`python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained`
 
 ### ResNet50分类训练（传统方法）
 ```bash
@@ -149,17 +168,17 @@ python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained
 
 1. **图像检测**
 ```bash
-python detect.py --source image.jpg --weights best.pt --conf 0.5
+python detect.py --source image.jpg --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
 2. **视频检测**
 ```bash
-python detect.py --source video.mp4 --weights best.pt --conf 0.5
+python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
 3. **实时摄像头检测**
 ```bash
-python detect.py --source 0 --weights best.pt --conf 0.5
+python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
 ## 📊 模型架构
@@ -205,7 +224,7 @@ tensorboard --logdir runs
 from ultralytics import YOLO
 
 # 加载训练好的模型
-model = YOLO('yolov8/weights/best.pt')
+model = YOLO('checkpoints/best_yolov8_detect.pt')
 
 # 进行预测
 results = model('image.jpg')
@@ -283,6 +302,16 @@ class YOLODataset:
 5. 开启Pull Request
 
 ## 📝 更新日志
+
+### [v2.1.0] - 2025-11-18 集成训练与兼容性修复
+#### 新增
+- ✅ 在 `train.py` 集成 YOLOv8 检测训练入口（无需单独脚本）
+- ✅ 新增 `data/detect.yaml`，可直接接入 Roboflow YOLOv8 数据集
+- ✅ 训练结束自动复制最佳权重到 `checkpoints/best_yolov8_detect.pt`
+
+#### 修复
+- 🛠 解决 ResNet50 推理时报错：`torch.cuda.FloatTensor` 与 `torch.FloatTensor` 设备不一致
+  （加载权重与输入张量统一到相同设备）
 
 ### [v2.0.0] - 2025-11-02 YOLOv8重大更新
 #### 新增
