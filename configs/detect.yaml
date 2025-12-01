@@ -1,0 +1,8 @@
+path: "e:/我的项目/研究生/TRAE/CrackDetector/data/Crack Detection.v2-v2.yolov8"
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ["crack"]
+

@@ -1,0 +1,14 @@
+dataset_root: "data/classify"
+train_dir: "train"
+val_dir: "val"
+classes: ["no_crack", "crack"]
+
+batch_size: 32
+epochs: 20
+image_size: 224
+learning_rate: 0.001
+weight_decay: 0.0005
+
+model: "resnet50"
+pretrained: true
+

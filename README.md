@@ -15,31 +15,40 @@ CrackDetector 是一个通用的裂缝检测深度学习项目，适用于多种
 - 📈 **高性能表现**: YOLOv8在检测任务上达到优异性能
 - 🚀 **端到端流程**: 提供完整的训练、评估和推理pipeline
 
-## 📋 项目结构
+## 📚 文档索引
+
+- 入门指南（安装、训练、推理）：[docs/getting_started.md](docs/getting_started.md)
+- 数据与标注（YOLOv8、Roboflow、分割预留）：[docs/datasets.md](docs/datasets.md)
+- 基准与评测（指标、对比与方法）：[docs/benchmark.md](docs/benchmark.md)
+- 桌面版打包与资源路径：[docs/desktop.md](docs/desktop.md)
+- 贡献规范与分支策略：[docs/contributing.md](docs/contributing.md)
+- 版本更新历史：[docs/changelog.md](docs/changelog.md)
+
+## 📂 项目信息架构与结构
 
 CrackDetector/
-├── models/                         # 模型定义  
-│   ├── model.py                  # ResNet50分类模型  
-│   ├── yolo_detector.py      # YOLOv8检测模型  
-│   └── __init__.py  
-├── utils/                              # 工具函数  
-│   ├── dataset.py                # 数据加载和预处理  
-│   ├── yolo_utils.py             # YOLO专用工具函数  
-│   └── __init__.py  
-├── data/                              # 数据集目录  
-│   ├── images/                    # 图像文件  
-│   │   ├── train/  
-│   │   └── val/  
-│   └── labels/                      # YOLO格式标注文件  
-│       ├── train/  
-│       └── val/  
-├── checkpoints/                 # 训练保存的模型权重  
-├── runs/                             # TensorBoard日志文件  
-├── train.py                         # ResNet50训练脚本  
-├── train_yolo.py                # YOLOv8训练脚本  
-├── detect.py                      # 裂缝检测推理脚本  
-├── requirements.txt          # 项目依赖  
-└── README.md                # 项目说明  
+├── models/                          # 模型定义
+│   ├── model.py                     # 模型工厂与YOLOv8分类/分割封装
+│   ├── resnet.py                    # ResNet50二分类（拆分）
+│   ├── yolo_detect.py               # YOLOv8检测（拆分）
+│   └── __init__.py
+├── configs/                         # 任务配置
+│   ├── detect.yaml                  # YOLOv8检测数据配置（Roboflow/YOLOv8）
+│   ├── classify.yaml                # 分类训练参数模板
+│   └── seg.yaml                     # 分割任务模板（预留）
+├── scripts/                         # 数据/评测/导出与训练脚本
+│   ├── convert_detect_to_cls.py     # 检测标注派生分类数据
+│   ├── evaluate_detect_as_cls.py    # 检测模型用于图像级分类评测
+│   ├── export_onnx.py               # 导出ONNX
+│   └── train_detect.py              # YOLOv8检测训练（可选）
+├── data/                            # 原始/示例数据集目录
+├── checkpoints/                     # 训练保存的模型权重
+├── runs/                            # 训练日志与结果
+├── docs/                            # 独立文档（安装、数据、基准、桌面版）
+├── train.py                         # 集成训练入口（含检测与分类）
+├── detect.py                        # 裂缝检测推理脚本
+├── requirements.txt                 # 项目依赖
+└── README.md                        # 项目说明（面向用户路径）
 
 ## 🛠️ 环境要求与安装
 
@@ -88,42 +97,9 @@ pip install torch torchvision torchaudio
 pip install ultralytics tensorboard tqdm Pillow numpy opencv-python
 ```
 
-## 📁 数据准备
+## 📁 数据准备（简版）
 
-### YOLOv8数据集格式
-
-```
-data/
-├── images/
-│   ├── train/           # 训练图像
-│   └── val/             # 验证图像
-└── labels/
-    ├── train/           # 训练标注文件 (.txt)
-    └── val/             # 验证标注文件 (.txt)
-```
-
-### YOLO标注格式
-
-每个标注文件对应一个图像，包含：
-
-```
-<class_id> <x_center> <y_center> <width> <height>
-```
-
-- 坐标值都是相对于图像宽高的归一化值(0-1)
-- class_id: 0表示裂缝
-
-### 数据集地址
-
-- **SDNET2018**: 道路和墙面裂缝数据集
-地址： https://digitalcommons.usu.edu/all_datasets/48/
-- **Crack Detection.v2-v2.yolov8**: 带标注的裂缝数据集
-  
-  地址：https://universe.roboflow.com/antonio-raimundo/crack-detection-y5kyg/dataset/2
-
-### Roboflow 数据集接入（detect.yaml 示例）
-
-使用 Roboflow 导出的 YOLOv8 数据集时，推荐在 `data/detect.yaml` 中配置根路径与子目录：
+完整说明与更多示例请查看 `docs/datasets.md`。下方为 `configs/detect.yaml` 的最小示例：
 
 ```yaml
 path: "e:/CrackDetector/data/Crack Detection.v2-v2.yolov8"
@@ -135,8 +111,7 @@ nc: 1
 names: ["crack"]
 ```
 
-- 训练命令中的 `--detect_data data/detect.yaml` 会读取上述配置
-- 如没有 `test` 集，可删除该行；`train/val` 即可完成训练与验证
+- 训练命令中的 `--detect_data configs/detect.yaml` 会读取上述配置；如没有 `test`，删除该行即可。
 
 ## 🚀 快速开始
 
@@ -148,7 +123,7 @@ names: ["crack"]
 # GPU（自动选择可用设备）
 python train.py \
   --use_yolov8_detect \
-  --detect_data data/detect.yaml \
+  --detect_data configs/detect.yaml \
   --detect_model yolov8n.pt \
   --detect_epochs 100 \
   --detect_imgsz 640 \
@@ -158,13 +133,14 @@ python train.py \
 # CPU
 python train.py \
   --use_yolov8_detect \
-  --detect_data data/detect.yaml \
+  --detect_data configs/detect.yaml \
   --detect_model yolov8n.pt \
   --detect_epochs 100 \
   --detect_imgsz 640
 ```
 
 - 训练完成后：最佳权重会自动复制到 `checkpoints/best_yolov8_detect.pt`
+- 可选：使用 `scripts/train_detect.py --data configs/detect.yaml --model yolov8n.pt` 启动检测训练
 - 原有分类训练入口保持不变：`python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained`
 
 ### ResNet50分类训练（传统方法）
@@ -193,38 +169,17 @@ python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt 
 python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
-## 📊 模型架构
+## 🧩 模型与对比（概览）
 
-### YOLOv8检测模型
-
-```python
-Backbone: CSPDarknet → Neck: PAN-FPN → Head: Classifier + BBox Regressor
-```
-
-### ResNet50分类模型（传统）
-
-```python
-ResNet50 Backbone → [512维全连接层] → ReLU → Dropout(0.3) → [2维输出层]
-```
-
-### 模型对比
-
-|特性|YOLOv8|ResNet50|
-|--|--|--|
-|任务类型|目标检测|图像分类|
-|输出|边界框+置信度|分类概率|
-|优势|精确定位、多目标|简单快速、二分类|
-|适用场景|需要定位裂缝位置|只需判断有无裂缝|
+- 检测：YOLOv8（定位与边界框）。
+- 分类：ResNet50（有/无裂缝判断）。
+- 详细架构与对比请见 `docs/benchmark.md`。
 
 ## 📈 性能评估
 
 ### 训练监控
 
 ```sh
-# 启动TensorBoard
-tensorboard --logdir yolov8
-
-# 查看训练结果
 tensorboard --logdir runs
 ```
 
@@ -234,7 +189,7 @@ tensorboard --logdir runs
 - **ResNet50**: 准确率, F1-score, 混淆矩阵
 - 损失曲线, 学习率变化
 
-## 🔍 模型推理
+## 🔍 模型推理（简版）
 
 ### 使用YOLOv8模型
 
@@ -265,50 +220,20 @@ model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 ```
 
-## 🛠️ 开发指南
+## 🛠️ 开发指南（简版）
 
 ### 扩展新模型
 
-在 `models/` 目录中添加新的模型架构：
+开发细则与分支策略请参阅 `CONTRIBUTING.md`。
 
-```python
-# models/yolo_detector.py
-from ultralytics import YOLO
+## 🎯 应用场景（概览）
 
-class CrackYOLODetector:
-    def __init__(self, model_path='best.pt'):
-        self.model = YOLO(model_path)
-    
-    def detect(self, image_path):
-        return self.model(image_path)
-```
-
-### 自定义数据加载
-
-修改 `utils/dataset.py` 支持不同数据格式：
-
-```python
-class YOLODataset:
-    def __init__(self, data_yaml, augment=True):
-        self.dataset = self.load_yolo_dataset(data_yaml)
-    
-    def load_yolo_dataset(self, data_yaml):
-        # YOLO格式数据加载
-        pass
-```
-
-## 🎯 应用场景
-
-### 当前支持
-
-- ✅ 建筑墙面裂缝检测与定位 (YOLOv8)
-- ✅ 道路路面裂缝识别与边界框检测 (YOLOv8)  
-- ✅ 桥梁结构裂缝监测 (YOLOv8)
-- ✅ 快速裂缝存在性判断 (ResNet50)
+- 建筑、道路、桥梁裂缝检测（YOLOv8）
+- 快速裂缝存在性判断（ResNet50）
 
 ## 🤝 贡献指南
 
-我们欢迎任何形式的贡献！
+我们欢迎任何形式的贡献！详细规范见 `CONTRIBUTING.md`。版本更新历史请参阅 `CHANGELOG.md`。
 
 ### 分支策略
 
@@ -326,43 +251,9 @@ class YOLODataset:
 
 ## 📝 更新日志
 
-### [v2.1.0] - 2025-11-18 集成训练与兼容性修复
+完整的版本更新记录请查看 `CHANGELOG.md`。
 
-#### 新增
-
-- ✅ 在 `train.py` 集成 YOLOv8 检测训练入口（无需单独脚本）
-- ✅ 新增 `data/detect.yaml`，可直接接入 Roboflow YOLOv8 数据集
-- ✅ 训练结束自动复制最佳权重到 `checkpoints/best_yolov8_detect.pt`
-
-#### 修复
-
-- 🛠 解决 ResNet50 推理时报错：`torch.cuda.FloatTensor` 与 `torch.FloatTensor` 设备不一致
-（加载权重与输入张量统一到相同设备）
-
-### [v2.0.0] - 2025-11-02 YOLOv8重大更新
-
-#### 新增
-
-- ✅ 集成YOLOv8目标检测模型
-- ✅ 支持裂缝边界框检测和定位
-- ✅ 新增YOLO格式数据集支持
-- ✅ 实时检测和视频处理功能
-- ✅ 完整的模型评估指标
-
-#### 优化
-
-- 🔄 模块化代码结构，支持多模型
-- 🔄 改进的训练pipeline
-- 🔄 增强的数据预处理
-- 🔄 更好的可视化输出
-
-### [v1.0.0] - 2025-10-21 初始化项目
-
-### [v1.0.1] - 2025-10-25 添加数据集,更新了模型训练代码
-
-### [v1.0.2] - 2025-10-29 更新了readme,修改模型以使用预训练权重,优化图像预处理步骤
-
-## 📄 许可证
+##  许可证
 
 本项目采用 Apache 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
@@ -387,33 +278,21 @@ class YOLODataset:
 
 ---
 
-**注意**: 项目当前主要开发在 `yolov8` 分支，YOLOv8版本仍在积极开发中。ResNet50版本保持在 `main` 分支作为稳定版本。
+**注意**: 项目当前主要开发在 `detect` 分支，YOLOv8版本仍在积极开发中。ResNet50版本保持在 `master` 分支作为稳定版本。
 
 ```
 
-## 🎯 Gitee仓库操作建议
+## 🖼️ 结果示例
 
-### 1. **创建新分支**
-```bash
-# 创建并切换到yolov8分支
-git checkout -b yolov8
+- 检测结果示例：`runs/detect/train_crack/val_batch0_pred.jpg`
+- 训练批次示例：`runs/detect/train_crack/train_batch0.jpg`
+- 视频帧示例：通过 `detect.py --source video.mp4` 推理后手工保存帧图（示例帧可在脚本中使用 OpenCV 保存）
 
-# 推送新分支到远程
-git push -u origin yolov8
-```
+## ❓ 常见问题
 
-### 2. **分支说明**
+- 未安装 Ultralytics：执行 `pip install ultralytics`
+- 权重路径不一致：训练后权重复制到 `checkpoints/best_yolov8_detect.pt`
+- detect.yaml 路径：请使用 `configs/detect.yaml`
+- GPU 不可用：传入 `--device cpu` 或确保 CUDA 驱动正确
 
-- **main分支**: 保留ResNet50稳定版本
-- **yolov8分支**: 新功能开发，包含YOLOv8实现
-- **特性分支**: 从yolov8分支创建，用于特定功能开发
-
-### 3. **版本管理建议**
-
-在README中明确标注当前主要开发分支，方便用户选择：
-
-```markdown
-## 🎯 当前版本
-- **稳定版**: `main` 分支 (ResNet50分类)
-- **开发版**: `yolov8` 分支 (YOLOv8检测) ← 推荐使用
-```
+<!-- 仓库操作建议已合并至 CONTRIBUTING.md，避免主 README 过长 -->

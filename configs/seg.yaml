@@ -1,0 +1,15 @@
+# 预留：未来分割任务配置模板
+dataset_root: "data/segmentation"
+train_dir: "train/images"
+val_dir: "val/images"
+mask_dir: "train/masks"
+classes: ["crack"]
+
+batch_size: 8
+epochs: 100
+image_size: 640
+learning_rate: 0.0005
+
+model: "yolov8n-seg"
+weights: "yolov8n-seg.pt"
+

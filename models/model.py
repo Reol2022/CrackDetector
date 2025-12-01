@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+from .resnet import CrackDetector
+from .yolo_detect import YOLOv8Detector
 
 """
 模型工厂：支持 ResNet50 分类与 YOLOv8 分类
@@ -10,37 +12,12 @@ from torchvision import models
 后续可扩展：YOLOv8 检测/分割（位置识别与掩膜），可在此文件提供统一封装
 """
 
-class CrackDetector(nn.Module):
-    def __init__(self, num_classes=2, pretrained=True):
-        super(CrackDetector, self).__init__()
-        self.resnet50 = models.resnet50(pretrained=False) # pretrained=False因为我们要加载本地权重
-        
-        # 尝试加载本地预训练权重
-        if pretrained:
-            try:
-                self.resnet50.load_state_dict(torch.load('checkpoints/resnet50-0676ba61.pth'), strict=False)
-                print("成功加载本地预训练权重: checkpoints/resnet50-0676ba61.pth")
-            except FileNotFoundError:
-                print("警告: 未找到本地预训练权重 'checkpoints/resnet50-0676ba61.pth'。模型将从头开始训练。")
-
-        # 冻结所有层
-        for param in self.resnet50.parameters():
-            param.requires_grad = False
-
-        # 只解冻layer4和全连接层
-        for param in self.resnet50.layer4.parameters():
-            param.requires_grad = True
-
-        # 替换全连接层以匹配我们的任务
-        num_ftrs = self.resnet50.fc.in_features
-        self.resnet50.fc = nn.Linear(num_ftrs, num_classes)
-        
-        # 确保新的全连接层是可训练的
-        for param in self.resnet50.fc.parameters():
-            param.requires_grad = True
-
-    def forward(self, x):
-        return self.resnet50(x)
+"""
+将 ResNet50 分类与 YOLOv8 检测拆分到独立文件：
+- models/resnet.py: CrackDetector
+- models/yolo_detect.py: YOLOv8Detector
+本文件保留工厂与 YOLOv8 分类/分割封装，保持向后兼容。
+"""
 
 class YOLOv8Classifier:
     """YOLOv8 分类模型封装，用于推理。
@@ -82,29 +59,7 @@ class YOLOv8Classifier:
             return 0, None
 
 
-class YOLOv8Detector:
-    """YOLOv8 检测模型封装。
-    predict(image) 返回 Ultralytics 的单图结果对象，包含 boxes 等。
-    """
-    def __init__(self, weights_path=None, device=None):
-        try:
-            from ultralytics import YOLO
-        except ImportError as e:
-            raise ImportError("未安装 ultralytics，请先执行: pip install ultralytics") from e
-        self.device = device
-        self.weights_path = weights_path or 'yolov8n.pt'
-        self.model = YOLO(self.weights_path)
-
-    def eval(self):
-        return self
-
-    def to(self, device):
-        self.device = device
-        return self
-
-    def predict(self, image):
-        results = self.model.predict(image, device=self.device, verbose=False)
-        return results[0]
+# YOLOv8Detector 已迁移至 models/yolo_detect.py
 
 
 class YOLOv8Segmenter:

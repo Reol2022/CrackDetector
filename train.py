@@ -172,7 +172,7 @@ if __name__ == '__main__':
     parser.add_argument('--workers', type=int, default=4, help='数据加载并行度（workers），适当调小可降低CPU占用')
     # YOLOv8 检测训练相关参数
     parser.add_argument('--use_yolov8_detect', action='store_true', help='使用YOLOv8进行检测训练')
-    parser.add_argument('--detect_data', type=str, default='data/detect.yaml', help='检测数据集配置yaml路径')
+    parser.add_argument('--detect_data', type=str, default='configs/detect.yaml', help='检测数据集配置yaml路径')
     parser.add_argument('--detect_model', type=str, default='yolov8n.pt', help='YOLOv8检测模型：名称或本地权重路径')
     parser.add_argument('--detect_imgsz', type=int, default=640, help='YOLOv8检测输入尺寸（默认640）')
     parser.add_argument('--detect_epochs', type=int, default=100, help='YOLOv8检测训练轮数（默认100）')
