@@ -50,68 +50,6 @@ CrackDetector/
 ├── requirements.txt                 # 项目依赖
 └── README.md                        # 项目说明（面向用户路径）
 
-## 🛠️ 环境要求与安装
-
-### 系统要求
-
-- Python 3.8+
-- PyTorch 1.9+
-- CUDA 11.0+ (GPU训练推荐)
-- Ultralytics YOLOv8
-
-### 安装步骤
-
-1. **克隆项目**
-
-```sh
-git clone https://gitee.com/Reol2022/SmartTunnel-CrackDetector
-cd CrackDetector
-
-# 切换到YOLOv8分支
-git checkout yolov8
-```
-
-2. **创建虚拟环境（推荐）**
-
-```sh
-# 使用conda
-conda create -n crackdetect python=3.8
-conda activate crackdetect
-
-# 或使用venv
-python -m venv crack_env
-source crack_env/bin/activate  # Linux/Mac
-crack_env\Scripts\activate    # Windows
-```
-
-3. **安装依赖**
-
-```sh
-pip install -r requirements.txt
-
-# 安装YOLOv8
-pip install ultralytics
-
-# 如果没有requirements.txt，手动安装核心依赖
-pip install torch torchvision torchaudio
-pip install ultralytics tensorboard tqdm Pillow numpy opencv-python
-```
-
-## 📁 数据准备（简版）
-
-完整说明与更多示例请查看 `docs/datasets.md`。下方为 `configs/detect.yaml` 的最小示例：
-
-```yaml
-path: "e:/CrackDetector/data/Crack Detection.v2-v2.yolov8"
-train: train/images
-val: valid/images
-test: test/images
-
-nc: 1
-names: ["crack"]
-```
-
-- 训练命令中的 `--detect_data configs/detect.yaml` 会读取上述配置；如没有 `test`，删除该行即可。
 
 ## 🚀 快速开始
 
@@ -251,7 +189,7 @@ model.eval()
 
 ## 📝 更新日志
 
-完整的版本更新记录请查看 `CHANGELOG.md`。
+完整的版本更新记录请查看 `changelog.md`。
 
 ##  许可证
 
@@ -270,7 +208,7 @@ model.eval()
 - **项目维护者**: [Reol2020]
 - **邮箱**: [Reol42195@gmail163.com]
 - **项目地址**: [https://gitee.com/Reol2022/SmartTunnel-CrackDetector]
-- **当前主要分支**: `yolov8`
+- **当前主要分支**: `detect`
 
 ## ⭐ 支持项目
 
@@ -280,7 +218,6 @@ model.eval()
 
 **注意**: 项目当前主要开发在 `detect` 分支，YOLOv8版本仍在积极开发中。ResNet50版本保持在 `master` 分支作为稳定版本。
 
-```
 
 ## 🖼️ 结果示例
 

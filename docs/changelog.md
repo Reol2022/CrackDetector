@@ -10,7 +10,7 @@
 - 更新快速开始与示例：统一示例类名为 `YOLOv8Detector`，修订结果示例与视频帧说明
 - 新增“常见问题”版块：涵盖 Ultralytics 安装、权重路径、`configs/detect.yaml` 与 GPU 设备
 - 全站链接改为可点击的 Markdown 链接，提升可读性
-- 维护文档补充：`contributing.md` 与根目录 `changelog.md`
+- 维护文档补充：`contributing.md` , `changelog.md`
 
 ### 修复
 

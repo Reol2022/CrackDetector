@@ -2,15 +2,51 @@
 
 本指南覆盖安装环境、训练与推理的基础使用。
 
-## 安装
+## 环境要求与安装
+
+### 系统要求
 
 - Python 3.8+
-- 推荐使用虚拟环境（conda 或 venv）
-- 安装依赖：
+- PyTorch 1.9+
+- CUDA 11.0+ (GPU训练推荐)
+- Ultralytics YOLOv8
+
+### 安装步骤
+
+1. **克隆项目**
+
+```sh
+git clone https://gitee.com/Reol2022/SmartTunnel-CrackDetector
+cd CrackDetector
+
+# 切换到YOLOv8分支
+git checkout yolov8
+```
+
+2. **创建虚拟环境（推荐）**
+
+```sh
+# 使用conda
+conda create -n crackdetect python=3.8
+conda activate crackdetect
+
+# 或使用venv
+python -m venv crack_env
+source crack_env/bin/activate  # Linux/Mac
+crack_env\Scripts\activate    # Windows
+```
+
+3. **安装依赖**
 
 ```sh
 pip install -r requirements.txt
+
+# 安装YOLOv8
 pip install ultralytics
+
+# 如果没有requirements.txt，手动安装核心依赖
+pip install torch torchvision torchaudio
+pip install ultralytics tensorboard tqdm Pillow numpy opencv-python
 ```
 
 ## 训练（YOLOv8 检测）

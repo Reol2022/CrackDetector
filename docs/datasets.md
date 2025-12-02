@@ -1,5 +1,13 @@
 # 数据集与标注
 
+## 数据集地址
+
+- **SDNET2018**: 道路和墙面裂缝数据集
+地址： https://digitalcommons.usu.edu/all_datasets/48/
+- **Crack Detection.v2-v2.yolov8**: 带标注的裂缝数据集
+地址：https://universe.roboflow.com/antonio-raimundo/crack-detection-y5kyg/dataset/2
+- **自定义数据集**: 按照YOLO格式组织即可
+
 ## YOLOv8 标注格式
 
 每张图片对应一个同名 `.txt` 文件，内容为：
