@@ -16,7 +16,6 @@
 ### 修复
 
 - 修正单文件模式打包时缺失权重导致中断：`scripts/build_exe.ps1` 现仅收集存在的文件
-- 统一打包入口的隐藏导入与数据收集，减少 `ultralytics` 模块缺失报错
 
 ## [v2.1.1] - 2025-12-01
 
@@ -24,13 +23,12 @@
 
 - README 精简与信息架构重组：新增“文档索引”，将详细章节迁移到 `docs/`
 - 更新快速开始与示例：统一示例类名为 `YOLOv8Detector`，修订结果示例与视频帧说明
-- 新增“常见问题”版块：涵盖 Ultralytics 安装、权重路径、`configs/detect.yaml` 与 GPU 设备
+- 新增“常见问题”版块：包括 Ultralytics 安装、权重路径、`configs/detect.yaml` 与 GPU 设备
 - 全站链接改为可点击的 Markdown 链接，提升可读性
 - 维护文档补充：`contributing.md` , `changelog.md`
 
 ### 修复
 
-- 训练脚本默认配置路径：将 `--detect_data` 默认从 `data/detect.yaml` 改为 `configs/detect.yaml`
 - 统一文档中的路径与命名不一致问题（例如模型示例类名、数据配置路径）
 
 ## [v2.1.0] - 2025-11-18
