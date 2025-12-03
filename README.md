@@ -47,6 +47,7 @@ CrackDetector/
 ├── docs/                            # 独立文档（安装、数据、基准、桌面版）
 ├── train.py                         # 集成训练入口（含检测与分类）
 ├── detect.py                        # 裂缝检测推理脚本
+├── app.py                           # GUI界面
 ├── requirements.txt                 # 项目依赖
 └── README.md                        # 项目说明（面向用户路径）
 
@@ -95,17 +96,26 @@ python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained
 python detect.py --source image.jpg --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
-2. **视频检测**
+2. **视频检测（待开发）**
 
 ```sh
 python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 
-3. **实时摄像头检测**
+3. **实时摄像头检测（待开发）**
 
 ```sh
 python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
+
+### GUI界面
+
+```sh
+python app.py
+```
+在这个界面可以进行裂缝二分类和检测的操作
+![GUI.png](docs%2Fimg%2FGUI.png)
+
 
 ## 🧩 模型与对比（概览）
 
@@ -127,36 +137,6 @@ tensorboard --logdir runs
 - **ResNet50**: 准确率, F1-score, 混淆矩阵
 - 损失曲线, 学习率变化
 
-## 🔍 模型推理（简版）
-
-### 使用YOLOv8模型
-
-```python
-from ultralytics import YOLO
-
-# 加载训练好的模型
-model = YOLO('checkpoints/best_yolov8_detect.pt')
-
-# 进行预测
-results = model('image.jpg')
-
-# 可视化结果
-for r in results:
-    im_array = r.plot()  # 绘制检测结果
-    cv2.imwrite('result.jpg', im_array)
-```
-
-### 使用ResNet50模型
-
-```python
-from models.model import get_model
-import torch
-
-model = get_model(model_type="classification", num_classes=2)
-checkpoint = torch.load('checkpoints/best_model.pth')
-model.load_state_dict(checkpoint['model_state_dict'])
-model.eval()
-```
 
 ## 🛠️ 开发指南（简版）
 
@@ -171,12 +151,12 @@ model.eval()
 
 ## 🤝 贡献指南
 
-我们欢迎任何形式的贡献！详细规范见 `CONTRIBUTING.md`。版本更新历史请参阅 `CHANGELOG.md`。
+我们欢迎任何形式的贡献！详细规范见 `contributing.md`。版本更新历史请参阅 `changelog.md`。
 
 ### 分支策略
 
-- `main`: 稳定版本（当前为ResNet50）
-- `yolov8`: YOLOv8开发分支
+- `master`: 稳定版本（当前为ResNet50）
+- `detect`: YOLOv8开发分支
 - `feature/*`: 功能开发分支
 
 ### 贡献流程

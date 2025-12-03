@@ -2,6 +2,22 @@
 
 本文件记录项目的主要更新与修复。
 
+## [v2.1.2] - 2025-12-03
+
+### 新增
+
+- 新增通用 YOLOv8 裂缝检测推理脚本：`detect.py`
+- 在 `app.py` 中引入 `resource_path()`，适配打包后资源路径（权重、配置）
+- 新增 PyInstaller 规范文件：`crackdetector.spec`
+- 新增 Windows 打包脚本：`scripts/build_exe.ps1`
+- 更新桌面版文档：重写并扩展 `docs/desktop.md`
+- README 增补“桌面版（EXE）”小节：快速打包步骤与常见问题
+
+### 修复
+
+- 修正单文件模式打包时缺失权重导致中断：`scripts/build_exe.ps1` 现仅收集存在的文件
+- 统一打包入口的隐藏导入与数据收集，减少 `ultralytics` 模块缺失报错
+
 ## [v2.1.1] - 2025-12-01
 
 ### 新增

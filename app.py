@@ -10,10 +10,29 @@ from torchvision import transforms
 
 from models.model import get_model
 
+def resource_path(relpath: str) -> str:
+    """在打包环境与开发环境下安全解析资源路径。
+    优先查找：PyInstaller临时目录(_MEIPASS) → 当前工作目录 → 可执行文件所在目录/源码目录。
+    """
+    candidates = []
+    base_meipass = getattr(sys, "_MEIPASS", None)
+    if base_meipass:
+        candidates.append(base_meipass)
+    candidates.append(os.getcwd())
+    if getattr(sys, "frozen", False):
+        candidates.append(os.path.dirname(sys.executable))
+    else:
+        candidates.append(os.path.dirname(__file__))
+    for base in candidates:
+        p = os.path.join(base, relpath)
+        if os.path.exists(p):
+            return p
+    return relpath
+
 class CrackDetectorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("裂缝检测")
+        self.root.title("CrackDetector")
         self.root.geometry("800x600")
         self.root.configure(bg="#f0f0f0")
         
@@ -39,7 +58,7 @@ class CrackDetectorApp:
             mode = self.mode_var.get()
             if mode == "分类":
                 # 优先使用 ResNet50（本地训练的分类权重），否则使用 YOLOv8 分类
-                resnet_path = "checkpoints/best_model.pth"
+                resnet_path = resource_path("checkpoints/best_model.pth")
                 if os.path.exists(resnet_path):
 
                     
@@ -52,34 +71,34 @@ class CrackDetectorApp:
                     self.model.eval()
                     print(f"已加载 ResNet50 分类模型: {resnet_path}")
                 else:
-                    cls_path = "checkpoints/best_yolov8.pt"
+                    cls_path = resource_path("checkpoints/best_yolov8.pt")
                     if os.path.exists(cls_path):
                         weights = cls_path
                     else:
-                        fallback = "yolov8n-cls.pt"
+                        fallback = resource_path("yolov8n-cls.pt")
                         weights = fallback
-                        messagebox.showinfo("提示", f"未找到 {cls_path}，改用 {fallback} 进行分类推理。")
+                        messagebox.showinfo("提示", f"未找到 {cls_path}，改用 {os.path.basename(fallback)} 进行分类推理。")
                     # 加载 YOLOv8 分类模型
                     self.model = get_model(model_name="yolov8", model_type="classification", weights=weights, device=self.device)
                     self.model.eval()
             elif mode == "检测":
-                det_path = "checkpoints/best_yolov8_detect.pt"
+                det_path = resource_path("checkpoints/best_yolov8_detect.pt")
                 if os.path.exists(det_path):
                     weights = det_path
                 else:
-                    fallback = "yolov8n.pt"
+                    fallback = resource_path("yolov8n.pt")
                     weights = fallback
-                    messagebox.showinfo("提示", f"未找到 {det_path}，改用 {fallback} 进行检测推理。")
+                    messagebox.showinfo("提示", f"未找到 {det_path}，改用 {os.path.basename(fallback)} 进行检测推理。")
                 self.model = get_model(model_name="yolov8-detect", weights=weights, device=self.device)
                 self.model.eval()
             elif mode == "分割":
-                seg_path = "checkpoints/best_yolov8_seg.pt"
+                seg_path = resource_path("checkpoints/best_yolov8_seg.pt")
                 if os.path.exists(seg_path):
                     weights = seg_path
                 else:
-                    fallback = "yolov8n-seg.pt"
+                    fallback = resource_path("yolov8n-seg.pt")
                     weights = fallback
-                    messagebox.showinfo("提示", f"未找到 {seg_path}，改用 {fallback} 进行分割推理。")
+                    messagebox.showinfo("提示", f"未找到 {seg_path}，改用 {os.path.basename(fallback)} 进行分割推理。")
                 self.model = get_model(model_name="yolov8-seg", weights=weights, device=self.device)
                 self.model.eval()
             else:
@@ -94,7 +113,7 @@ class CrackDetectorApp:
         title_frame = tk.Frame(self.root, bg="#4a7abc", height=60)
         title_frame.pack(fill=tk.X)
         
-        title_label = tk.Label(title_frame, text="裂缝检测", font=("Arial", 18, "bold"), 
+        title_label = tk.Label(title_frame, text="裂缝检测工具", font=("Arial", 18, "bold"),
                               bg="#4a7abc", fg="white")
         title_label.pack(pady=10)
         
