@@ -26,30 +26,30 @@ CrackDetector 是一个通用的裂缝检测深度学习项目，适用于多种
 
 ## 📂 项目信息架构与结构
 
-CrackDetector/
-├── models/                          # 模型定义
-│   ├── model.py                     # 模型工厂与YOLOv8分类/分割封装
-│   ├── resnet.py                    # ResNet50二分类（拆分）
-│   ├── yolo_detect.py               # YOLOv8检测（拆分）
-│   └── __init__.py
-├── configs/                         # 任务配置
-│   ├── detect.yaml                  # YOLOv8检测数据配置（Roboflow/YOLOv8）
-│   ├── classify.yaml                # 分类训练参数模板
-│   └── seg.yaml                     # 分割任务模板（预留）
-├── scripts/                         # 数据/评测/导出与训练脚本
-│   ├── convert_detect_to_cls.py     # 检测标注派生分类数据
-│   ├── evaluate_detect_as_cls.py    # 检测模型用于图像级分类评测
-│   ├── export_onnx.py               # 导出ONNX
-│   └── train_detect.py              # YOLOv8检测训练（可选）
-├── data/                            # 原始/示例数据集目录
-├── checkpoints/                     # 训练保存的模型权重
-├── runs/                            # 训练日志与结果
-├── docs/                            # 独立文档（安装、数据、基准、桌面版）
-├── train.py                         # 集成训练入口（含检测与分类）
-├── detect.py                        # 裂缝检测推理脚本
-├── app.py                           # GUI界面
-├── requirements.txt                 # 项目依赖
-└── README.md                        # 项目说明（面向用户路径）
+CrackDetector/  
+├── models/                          # 模型定义  
+│   ├── model.py                     # 模型工厂与YOLOv8分类/分割封装  
+│   ├── resnet.py                    # ResNet50二分类（拆分）  
+│   ├── yolo_detect.py               # YOLOv8检测（拆分）  
+│   └── __init__.py  
+├── configs/                         # 任务配置  
+│   ├── detect.yaml                  # YOLOv8检测数据配置（Roboflow/YOLOv8）  
+│   ├── classify.yaml                # 分类训练参数模板  
+│   └── seg.yaml                     # 分割任务模板（预留）  
+├── scripts/                         # 数据/评测/导出与训练脚本  
+│   ├── convert_detect_to_cls.py     # 检测标注派生分类数据  
+│   ├── evaluate_detect_as_cls.py    # 检测模型用于图像级分类评测  
+│   ├── export_onnx.py               # 导出ONNX  
+│   └── train_detect.py              # YOLOv8检测训练（可选）  
+├── data/                            # 原始/示例数据集目录  
+├── checkpoints/                     # 训练保存的模型权重  
+├── runs/                            # 训练日志与结果  
+├── docs/                            # 独立文档（安装、数据、基准、桌面版）  
+├── train.py                         # 集成训练入口（含检测与分类）  
+├── detect.py                        # 裂缝检测推理脚本  
+├── app.py                           # GUI界面  
+├── requirements.txt                 # 项目依赖  
+└── README.md                        # 项目说明（面向用户路径）  
 
 
 ## 🚀 快速开始
