@@ -20,8 +20,9 @@ CrackDetector 是一个通用的裂缝检测深度学习项目，适用于多种
 - 入门指南（安装、训练、推理）：[docs/getting_started.md](docs/getting_started.md)
 - 数据与标注（YOLOv8、Roboflow、分割预留）：[docs/datasets.md](docs/datasets.md)
 - 基准与评测（指标、对比与方法）：[docs/benchmark.md](docs/benchmark.md)
-- 桌面版打包与资源路径：[docs/desktop.md](docs/desktop.md)
+- pip 包构建与使用：[docs/desktop.md](docs/desktop.md)
 - 贡献规范与分支策略：[docs/contributing.md](docs/contributing.md)
+- 遇到的问题及解决方法：[docs/question.md](docs/question.md)
 - 版本更新历史：[docs/changelog.md](docs/changelog.md)
 
 ## 📂 项目信息架构与结构

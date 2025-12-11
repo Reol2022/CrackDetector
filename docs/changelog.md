@@ -2,6 +2,26 @@
 
 本文件记录项目的主要更新与修复。
 
+## [v2.1.3] - 2025-12-11
+
+### 新增
+
+- 新增视频抽帧与自动筛选脚本：`scripts/video_extract_filter_and_detect.py`
+  - 支持批量从 `data/video` 抽帧（按 `--fps` 或 `--every_n`）
+  - 基于亮度与清晰度（Laplacian 方差）进行质量筛选
+  - 可选启用 YOLO 检测筛选，仅保留检测到裂缝的帧
+  - 为每个视频生成 `diagnostics.json`，记录筛选指标与结果
+  - 可对原始视频直接运行 YOLO 并输出带框视频至 `runs/detect/<name>/`
+  - 默认输出目录：抽帧 `data/video/frames/<stem>/`，筛选 `data/video/filtered/<stem>/`
+
+
+### 说明
+
+- 脚本依赖：`opencv-python`、`ultralytics`；权重默认读取 `checkpoints/best_yolov8_detect.pt`
+- 常用示例：
+  - 抽帧+质量筛选：`python scripts/video_extract_filter_and_detect.py --video_dir data/video --fps 2`
+  - 启用检测筛选并输出检测视频：`python scripts/video_extract_filter_and_detect.py --video_dir data/video --fps 2 --filter_by_detect --weights checkpoints/best_yolov8_detect.pt --device 0 --detect_video`
+
 ## [v2.1.2] - 2025-12-03
 
 ### 新增

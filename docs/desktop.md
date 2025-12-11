@@ -1,106 +1,78 @@
-# 桌面版打包与资源路径（Windows）
+# pip 包构建与使用指南
 
-## 💻 桌面版（EXE）
+面向发布与使用：将项目打包为可安装的 Python 包（pip 安装），提供 API 与命令行工具（CLI）。
 
-将 GUI 打包为 Windows 可执行文件，开箱即用。
+## 安装与使用
 
-- 一键打包（目录模式推荐）：
-  - `./scripts/build_exe.ps1`
-- 单文件模式（体积较大）：
-  - `./scripts/build_exe.ps1 -OneFile`
-- 或使用规范文件：
-  - `pyinstaller --noconfirm --clean crackdetector.spec`
+- 安装（本地源码）：
+  - 开发模式：`pip install -e .`
+  - 普通安装：`pip install .`
 
-运行方式：
-- 目录模式：`dist/CrackDetector/CrackDetector.exe`
-- 单文件模式：`dist/CrackDetector.exe`
+- 安装（发布后）：
+  - 从 PyPI/TestPyPI：`pip install crackdetector`
+  - 注意：分类/检测依赖 `torch`，若未自动安装，请先安装对应平台的 PyTorch。
 
-常见问题与排查：
-- `ultralytics` 数据缺失或模块未收集
-  - 现已在 `crackdetector.spec` 中使用 `collect_data('ultralytics')` 与隐藏导入；若自行命令行打包，请添加：
-    - `--hidden-import ultralytics --hidden-import torch --hidden-import torchvision --hidden-import cv2 --hidden-import PIL --hidden-import numpy`
-- `torch` 体积过大（单文件 2GB+）
-  - 安装 CPU-only 版本再打包：
-    - `python -m pip uninstall -y torch torchvision torchaudio`
-    - `python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision torchaudio`
-  - 尽量使用目录模式打包，外置权重与配置到与 exe 同目录（`checkpoints/`、`configs/`），避免内嵌增大体积。
+### CLI 使用
 
+- 检测：`crackdetector-detect --source path/to/image_or_dir --weights checkpoints/best_yolov8_detect.pt`
+- 分类：`crackdetector-classify --source path/to/image_or_dir --weights checkpoints/best_model.pth`
 
-## 打包方式
+参数说明：
+- `--device`（可选）：如 `0`、`cpu`
+- `--conf`、`--iou`、`--imgsz`（检测）
+- 默认输出在 `runs/detect/<name>`，自动保存可视化结果与（可选）YOLO 文本格式
 
-- 依赖：`pip install pyinstaller`
-- 推荐：使用 `scripts/build_exe.ps1` 一键打包 GUI（`app.py`）。
-
-方式 A：一键脚本
-
-```powershell
-# 目录模式（推荐，资源管理更直观）
-./scripts/build_exe.ps1
-
-# 单文件模式（将全部打包为一个 exe）
-./scripts/build_exe.ps1 -OneFile
-```
-
-方式 B：使用 spec 文件（目录模式）
-
-```powershell
-pyinstaller --noconfirm --clean crackdetector.spec
-```
-
-方式 C：直接命令（单文件示例）
-
-```powershell
-pyinstaller --noconfirm --clean `
-  --name CrackDetector `
-  --onefile --windowed `
-  --add-data "configs/detect.yaml;configs" `
-  --add-data "configs/classify.yaml;configs" `
-  --add-data "configs/seg.yaml;configs" `
-  --add-data "checkpoints/best_yolov8.pt;checkpoints" `
-  --add-data "checkpoints/best_yolov8_detect.pt;checkpoints" `
-  --add-data "checkpoints/best_yolov8_seg.pt;checkpoints" `
-  --add-data "yolov8n.pt;." `
-  --add-data "yolov8n-cls.pt;." `
-  --add-data "yolov8n-seg.pt;." `
-  --hidden-import ultralytics --hidden-import torch --hidden-import torchvision --hidden-import cv2 --hidden-import PIL --hidden-import numpy `
-  app.py
-```
-
-## 资源路径适配
-
-`app.py` 已内置资源路径适配函数，支持打包临时目录与运行目录：
+### API 使用
 
 ```python
-def resource_path(relpath: str) -> str:
-    candidates = []
-    base_meipass = getattr(sys, "_MEIPASS", None)
-    if base_meipass:
-        candidates.append(base_meipass)
-    candidates.append(os.getcwd())
-    if getattr(sys, "frozen", False):
-        candidates.append(os.path.dirname(sys.executable))
-    else:
-        candidates.append(os.path.dirname(__file__))
-    for base in candidates:
-        p = os.path.join(base, relpath)
-        if os.path.exists(p):
-            return p
-    return relpath
+from crackdetector.api import detect, classify
+
+# YOLOv8 检测
+detect_results = detect(
+    source="images/", weights="checkpoints/best_yolov8_detect.pt", conf=0.25
+)
+
+# ResNet50 二分类
+cls_results = classify(
+    source="images/", weights="checkpoints/best_model.pth"
+)
+for path, p0, p1, pred in cls_results:
+    print(path, p0, p1, pred)
 ```
 
-使用示例：
+## 打包与发布
 
-```python
-weights = resource_path("checkpoints/best_yolov8_detect.pt")
-data_yaml = resource_path("configs/detect.yaml")
+### 构建
+
+```sh
+python -m pip install --upgrade build twine
+python -m build  # 生成 dist/*.whl 与 *.tar.gz
 ```
 
-## 输出与运行
+### 上传到 TestPyPI（推荐先试）
 
-- 目录模式：在 `dist/CrackDetector/CrackDetector.exe` 运行；可直接放置或替换 `checkpoints/*.pt`、`configs/*.yaml`
-- 单文件模式：在 `dist/CrackDetector.exe` 运行；建议将权重文件放在与 exe 同一目录，或通过 `--add-data` 内嵌
+```sh
+python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+pip install -i https://test.pypi.org/simple crackdetector
+```
 
-## 分发建议
+### 上传到 PyPI
 
-- 将 `CrackDetector.exe` 与 `checkpoints/`、`configs/` 一并打包分发（或使用单文件模式内嵌）
-- 如果用户需要自行替换权重，只需把新权重文件放到 exe 同目录或 `dist/CrackDetector/checkpoints/`
+```sh
+python -m twine upload dist/*
+```
+
+## 依赖与数据文件
+
+- 运行时核心依赖：`ultralytics`、`opencv-python`、`numpy`、`pillow`（已在 `pyproject.toml`）
+- 分类与训练相关：`torch`、`torchvision`（体积较大，可能需手动安装）
+- 权重与配置：不随包分发。请自行放置在项目或运行目录，例如 `checkpoints/` 与 `configs/`。
+
+## 常见问题（pip 使用场景）
+
+- `torch` 未安装或版本不匹配：请先安装与平台匹配的 PyTorch
+- 权重路径不存在：传入 `--weights` 或将权重置于 `checkpoints/` 下
+- 路径包含空格/中文：建议使用引号包裹路径或切换到 ASCII 路径
+- GPU 不可用：指定 `--device cpu` 或安装/配置 CUDA
+
+更多问题与解答见根目录 `question.md`。

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crackdetector"
+version = "0.3.0"
+description = "通用裂缝检测与二分类的 Python 包，提供 API 和 CLI。"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [{ name = "Reol2020" }]
+keywords = ["crack", "detection", "yolov8", "pytorch", "computer-vision"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "ultralytics>=8.0.0",
+  "torchvision>=0.15.0",
+  "opencv-python>=4.8.0",
+  "numpy>=1.22",
+  "pillow>=9.0.0",
+]
+
+[project.urls]
+Homepage = "https://gitee.com/Reol2022/SmartTunnel-CrackDetector"
+Repository = "https://gitee.com/Reol2022/SmartTunnel-CrackDetector"
+
+[project.scripts]
+crackdetector-detect = "crackdetector.cli.detect:main"
+crackdetector-classify = "crackdetector.cli.classify:main"
+
+[tool.setuptools]
+packages = ["crackdetector", "crackdetector.cli", "models", "utils"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+crackdetector = ["py.typed"]
