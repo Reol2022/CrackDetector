@@ -40,27 +40,6 @@ for path, p0, p1, pred in cls_results:
     print(path, p0, p1, pred)
 ```
 
-## 打包与发布
-
-### 构建
-
-```sh
-python -m pip install --upgrade build twine
-python -m build  # 生成 dist/*.whl 与 *.tar.gz
-```
-
-### 上传到 TestPyPI（推荐先试）
-
-```sh
-python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-pip install -i https://test.pypi.org/simple crackdetector
-```
-
-### 上传到 PyPI
-
-```sh
-python -m twine upload dist/*
-```
 
 ## 依赖与数据文件
 
