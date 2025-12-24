@@ -106,6 +106,7 @@ python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt -
 分割结果：
 ![segment.jpg](docs%2Fimg%2Fsegment.jpg)
 
+
 3. **视频检测**
 
 ```sh
