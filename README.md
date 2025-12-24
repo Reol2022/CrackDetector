@@ -113,7 +113,11 @@ python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt -
 python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
 检测结果：
+
+
 ![detect.gif](docs%2Fimg%2Fdetect.gif)
+
+
 4. **实时摄像头检测（待开发）**
 
 ```sh
