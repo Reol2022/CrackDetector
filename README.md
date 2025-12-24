@@ -227,5 +227,5 @@ tensorboard --logdir runs
 - 权重路径不一致：训练后权重复制到 `checkpoints/best_yolov8_detect.pt`
 - detect.yaml 路径：请使用 `configs/detect.yaml`
 - GPU 不可用：传入 `--device cpu` 或确保 CUDA 驱动正确
+更多问题详见[docs/question.md](docs/question.md)
 
-<!-- 仓库操作建议已合并至 CONTRIBUTING.md，避免主 README 过长 -->
