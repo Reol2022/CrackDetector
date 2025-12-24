@@ -187,11 +187,32 @@ python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt 
 python scripts/evaluate_detect_as_cls.py --weights checkpoints/best_yolov8_detect.pt --data configs/detect.yaml
 ```
 
+## 分割（训练与推理）
+
+### 训练（YOLOv8 分割）
+```sh
+python scripts/train_seg.py --data configs/crack_seg_official.yaml --model yolov8n-seg.pt --epochs 50 --imgsz 640
+```
+- 数据路径默认使用 `data/crack-seg`（见 `configs/crack_seg_official.yaml`）
+- 训练完成自动复制最佳权重到 `checkpoints/best_yolov8_seg.pt`
+
+### 推理（掩膜显示）
+```sh
+# 使用训练好的分割权重
+python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt --task segment
+```
+- 结果保存在 `runs/segment/...`，包含掩膜叠加可视化图像
+
 ## GUI界面（可视化操作）
-在这个界面可以进行裂缝二分类和检测的操作
+在这个界面可以进行裂缝二分类、检测与分割的操作
 ![GUI.png](img%2FGUI.png)
+### 使用说明
+- 选择“任务模式”：分类/检测/分割
+- 加载图像后：
+  - 分类：点击“检测裂缝”（显示概率与预测）
+  - 检测：点击“检测裂缝”（显示框与置信度）
+  - 分割：点击“分割识别”（显示掩膜叠加）
 
 ## 数据集配置
 
 示例见 `configs/detect.yaml`；Roboflow 导出的 YOLOv8 格式可直接使用。
-

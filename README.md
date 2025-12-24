@@ -96,14 +96,24 @@ python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained
 ```sh
 python detect.py --source image.jpg --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
+检测结果：
+![detect.png](docs%2Fimg%2Fdetect.png)
+2. **图像分割**
 
-2. **视频检测（待开发）**
+```shell
+python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt --task segment
+```
+分割结果：
+![segment.jpg](docs%2Fimg%2Fsegment.jpg)
+
+3. **视频检测**
 
 ```sh
 python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
 ```
-
-3. **实时摄像头检测（待开发）**
+检测结果：
+![detect.gif](docs%2Fimg%2Fdetect.gif)
+4. **实时摄像头检测（待开发）**
 
 ```sh
 python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
@@ -114,7 +124,7 @@ python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0
 ```sh
 python app.py
 ```
-在这个界面可以进行裂缝二分类和检测的操作
+在GUI界面可以进行裂缝二分类、检测和分割的操作
 ![GUI.png](docs%2Fimg%2FGUI.png)
 
 

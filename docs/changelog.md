@@ -2,6 +2,23 @@
 
 本文件记录项目的主要更新与修复。
 
+## [v2.1.5] - 2025-12-24
+
+### 新增
+- 集成分割模型封装：`models/yolo_seg.py`
+- `detect.py` 支持 `--task segment` 显式分割推理
+- 新增 GUI “分割识别”按钮，分割模式下可一键掩膜可视化（`app.py`）
+- 新增官方数据集配置：`configs/crack_seg_official.yaml`（默认指向 `data/crack-seg`）
+- 新增自动下载与训练演示脚本：`scripts/download_and_train_seg.py`
+
+### 修复
+- 修复 GUI 分割掩膜尺寸不匹配报错，改用 `result.plot()` 保证显示尺寸对齐
+- 统一分割数据集路径为 `data/crack-seg`，避免路径不一致导致训练失败
+
+### 说明
+- 分割训练示例：`python scripts/train_seg.py --data configs/crack_seg_official.yaml`
+- 分割推理示例：`python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt --task segment`
+
 ## [v2.1.4]- 2025-12-17
 
 ### 新增

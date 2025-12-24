@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchvision import models
 from .resnet import CrackDetector
 from .yolo_detect import YOLOv8Detector
+from .yolo_seg import YOLOv8Segmenter
 
 """
 模型工厂：支持 ResNet50 分类与 YOLOv8 分类
@@ -60,32 +61,7 @@ class YOLOv8Classifier:
 
 
 # YOLOv8Detector 已迁移至 models/yolo_detect.py
-
-
-class YOLOv8Segmenter:
-    """YOLOv8 分割模型封装。
-    predict(image) 返回单图结果对象，包含 masks。
-    """
-    def __init__(self, weights_path=None, device=None):
-        try:
-            from ultralytics import YOLO
-        except ImportError as e:
-            raise ImportError("未安装 ultralytics，请先执行: pip install ultralytics") from e
-        self.device = device
-        self.weights_path = weights_path or 'yolov8n-seg.pt'
-        self.model = YOLO(self.weights_path)
-
-    def eval(self):
-        return self
-
-    def to(self, device):
-        self.device = device
-        return self
-
-    def predict(self, image):
-        results = self.model.predict(image, device=self.device, verbose=False)
-        return results[0]
-
+# YOLOv8Segmenter 已迁移至 models/yolo_seg.py
 
 def get_model(model_name='CrackDetector', model_type='classification', num_classes=2, pretrained=True, **kwargs):
     """通用模型工厂

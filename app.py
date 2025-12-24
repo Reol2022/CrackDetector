@@ -160,6 +160,11 @@ class CrackDetectorApp:
         self.highlight_button.pack(pady=5)
         self.highlight_button.config(state=tk.DISABLED)
         
+        self.segment_button = tk.Button(button_frame, text="分割识别", command=self.segment_crack,
+                                        bg="#9C27B0", fg="white", font=("Arial", 12), width=15)
+        self.segment_button.pack(pady=5)
+        self.segment_button.config(state=tk.DISABLED)
+        
         # 结果显示区域
         result_frame = tk.LabelFrame(control_frame, text="检测结果", bg="#f0f0f0", font=("Arial", 12))
         result_frame.pack(fill=tk.X, pady=10, ipady=5)
@@ -197,6 +202,10 @@ class CrackDetectorApp:
             self.prob_label_no_crack.config(text="无裂缝概率: 0%")
             self.prob_label_crack.config(text="有裂缝概率: 0%")
             self.highlight_button.config(state=tk.DISABLED)
+            if self.mode_var.get() == "分割":
+                self.segment_button.config(state=tk.NORMAL)
+            else:
+                self.segment_button.config(state=tk.DISABLED)
     
     def display_image(self, image_path):
         """显示图像"""
@@ -307,23 +316,14 @@ class CrackDetectorApp:
                     messagebox.showerror("错误", "当前模式需要 YOLOv8 分割模型。")
                     return
                 r = self.model.predict(image)
-                im = np.array(image.convert('RGB'))
-                overlay = im.copy()
-                alpha = 0.5
-                has_mask = False
-                if getattr(r, 'masks', None) is not None and r.masks is not None:
-                    masks = r.masks.data.cpu().numpy()
-                    for m in masks:
-                        has_mask = True
-                        overlay[m > 0.5] = (255, 0, 0)
-                    blended = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
-                else:
-                    blended = im
-                result_pil = Image.fromarray(blended)
+                plotted = r.plot()
+                plotted_rgb = cv2.cvtColor(plotted, cv2.COLOR_BGR2RGB)
+                result_pil = Image.fromarray(plotted_rgb)
                 result_pil = self.resize_image(result_pil, (380, 380))
                 photo = ImageTk.PhotoImage(result_pil)
                 self.image_label.config(image=photo)
                 self.image_label.image = photo
+                has_mask = getattr(r, 'masks', None) is not None and r.masks is not None
                 if has_mask:
                     self.result_label.config(text="检测结果: 有裂缝(分割)", fg="red")
                 else:
@@ -349,8 +349,45 @@ class CrackDetectorApp:
             self.prob_label_crack.config(text="有裂缝概率: 0%")
             self.highlight_button.config(state=tk.DISABLED)
             self.status_bar.config(text="模式已切换，请选择图像并检测")
+            if self.mode_var.get() == "分割":
+                self.segment_button.config(state=tk.NORMAL if self.current_image_path else tk.DISABLED)
+            else:
+                self.segment_button.config(state=tk.DISABLED)
         except Exception as e:
             messagebox.showerror("错误", f"切换模式失败: {str(e)}")
+    
+    def segment_crack(self):
+        if not self.current_image_path or not self.model:
+            messagebox.showwarning("警告", "请先选择图像并确保模型已加载！")
+            return
+        if self.mode_var.get() != "分割":
+            messagebox.showwarning("警告", "当前模式不是分割，请切换到分割模式。")
+            return
+        try:
+            self.status_bar.config(text="正在分割识别...")
+            image = Image.open(self.current_image_path).convert('RGB')
+            if not hasattr(self.model, 'predict'):
+                messagebox.showerror("错误", "当前模式需要 YOLOv8 分割模型。")
+                return
+            r = self.model.predict(image)
+            plotted = r.plot()
+            plotted_rgb = cv2.cvtColor(plotted, cv2.COLOR_BGR2RGB)
+            result_pil = Image.fromarray(plotted_rgb)
+            result_pil = self.resize_image(result_pil, (380, 380))
+            photo = ImageTk.PhotoImage(result_pil)
+            self.image_label.config(image=photo)
+            self.image_label.image = photo
+            has_mask = getattr(r, 'masks', None) is not None and r.masks is not None
+            if has_mask:
+                self.result_label.config(text="检测结果: 有裂缝(分割)", fg="red")
+            else:
+                self.result_label.config(text="检测结果: 无裂缝(分割)", fg="green")
+            self.prob_label_no_crack.config(text="无裂缝概率: -")
+            self.prob_label_crack.config(text="有裂缝概率: -")
+            self.status_bar.config(text="分割识别完成")
+        except Exception as e:
+            messagebox.showerror("错误", f"分割识别过程中出错: {str(e)}")
+            self.status_bar.config(text="分割识别失败")
     
     def highlight_crack(self):
         """突出显示裂缝"""
