@@ -7,9 +7,17 @@ dataset/
 __pycache__/
 .idea/
 # 数据集文件 - 保留目录但忽略内容
-data/SDNET2018_extracted/*
-data/train/*
-data/val/*
+data/
+runs/
+datasets/
+# 忽略虚拟环境
+venv/
+.venv/
+env/
+
+# 忽略临时文件
+*.log
+*.bak
 
 # 但保留空目录的标记文件（可选）
 !data/SDNET2018_extracted/.gitkeep
