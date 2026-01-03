@@ -1,6 +1,11 @@
 # 模型文件
 checkpoints/*.pth
-
+*.pth
+*.pt
+*.mp4
+dataset/
+__pycache__/
+.idea/
 # 数据集文件 - 保留目录但忽略内容
 data/SDNET2018_extracted/*
 data/train/*
@@ -17,7 +22,6 @@ data/val/*
 *.pickle
 *.zip
 *.tar.gz
-__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -37,3 +41,26 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# 忽略虚拟环境文件夹 (假设你的环境叫 venv 或 .venv 或 env)
+venv/
+.venv/
+env/
+.env/
+
+
+
+# 忽略大文件和库文件
+*.dll
+*.lib
+
+*.pyd
+
+# 忽略数据集和模型权重
+
+*.rar
+*.tar
+*.onnx
+
+# 忽略临时文件
+*.log
