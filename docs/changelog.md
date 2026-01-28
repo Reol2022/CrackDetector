@@ -10,10 +10,12 @@
 - 新增 GUI “分割识别”按钮，分割模式下可一键掩膜可视化（`app.py`）
 - 新增官方数据集配置：`configs/crack_seg_official.yaml`（默认指向 `data/crack-seg`）
 - 新增自动下载与训练演示脚本：`scripts/download_and_train_seg.py`
+- **训练过程视频生成**：`train_seg.py` 支持生成裂缝检测可视化视频，实时展示训练效果（保存为 `training_process.mp4`）
 
 ### 修复
 - 修复 GUI 分割掩膜尺寸不匹配报错，改用 `result.plot()` 保证显示尺寸对齐
 - 统一分割数据集路径为 `data/crack-seg`，避免路径不一致导致训练失败
+- 优化 `train_seg.py` 路径处理逻辑，自动适配 YOLOv8 运行目录结构
 
 ### 说明
 - 分割训练示例：`python scripts/train_seg.py --data configs/crack_seg_official.yaml`

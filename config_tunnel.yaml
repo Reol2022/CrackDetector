@@ -1,0 +1,34 @@
+# Anomalib v1.0 Config (Final Fix)
+seed_everything: 42
+
+data:
+  class_path: anomalib.data.Folder
+  init_args:
+    name: tunnel_anomaly
+    root: ./data/tunnel_anomaly
+    normal_dir: good
+    abnormal_dir: crack
+    mask_dir: ground_truth/crack
+    train_batch_size: 4       # 改小一点防止显存爆炸
+    eval_batch_size: 4
+    num_workers: 0
+
+model:
+  class_path: anomalib.models.Patchcore
+  init_args:
+    backbone: wide_resnet50_2
+    pre_trained: true
+    coreset_sampling_ratio: 0.1
+    num_neighbors: 9
+
+trainer:
+  accelerator: auto
+  devices: 1
+  max_epochs: 1
+  default_root_dir: ./results
+  callbacks:
+    - class_path: anomalib.callbacks.ModelCheckpoint
+      init_args:
+        mode: max
+        monitor: pixel_AUROC
+        save_last: true

@@ -1,232 +1,155 @@
-# CrackDetector 🔍
 
-基于深度学习的通用裂缝检测项目，支持多种深度学习模型实现高效的裂缝识别与检测。
+# 🔍 CrackDetector: Tunnel Surface Anomaly Detection
 
-## 🌟 项目简介
+> **Current Branch: `feature/anomaly-detection` (Experimental)**
 
-CrackDetector 是一个通用的裂缝检测深度学习项目，适用于多种场景的裂缝识别。该项目提供多种先进的计算机视觉模型，能够自动识别和检测建筑表面、道路、墙面等不同场景的裂缝，为结构健康监测提供智能化的解决方案。
+<div align="center">
 
-### 核心特性
+**基于 PatchCore 的隧道表面无监督异常检测**
+**只看好图，就能发现未知缺陷**
 
-- 🧠 **多模型支持**: 支持YOLOv8目标检测和ResNet50分类两种架构
-- 🎯 **目标检测能力**: YOLOv8实现像素级裂缝定位和边界框检测
-- 📊 **多场景适配**: 适用于建筑物、道路、墙面等多种场景的裂缝检测
-- 🔧 **模块化设计**: 清晰的代码结构，便于二次开发和扩展
-- 📈 **高性能表现**: YOLOv8在检测任务上达到优异性能
-- 🚀 **端到端流程**: 提供完整的训练、评估和推理pipeline
+[核心原理](https://www.google.com/search?q=%23-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86) • [环境准备](https://www.google.com/search?q=%23-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87) • [数据准备](https://www.google.com/search?q=%23-%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87) • [开始训练](https://www.google.com/search?q=%23-%E5%BC%80%E5%A7%8B%E8%AE%AD%E7%BB%83) • [可视化结果](https://www.google.com/search?q=%23-%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BB%93%E6%9E%9C)
 
-## 📚 文档索引
-
-- 入门指南（安装、训练、推理）：[docs/getting_started.md](docs/getting_started.md)
-- 数据与标注（YOLOv8、Roboflow、分割）：[docs/datasets.md](docs/datasets.md)
-- 基准与评测（指标、对比与方法）：[docs/benchmark.md](docs/benchmark.md)
-- pip 包构建与使用：[docs/desktop.md](docs/desktop.md)
-- 贡献规范与分支策略：[docs/contributing.md](docs/contributing.md)
-- 遇到的问题及解决方法：[docs/question.md](docs/question.md)
-- 版本更新历史：[docs/changelog.md](docs/changelog.md)
-
-## 📂 项目信息架构与结构
-
-CrackDetector/  
-├── models/                          # 模型定义  
-│   ├── model.py                     # 模型工厂与YOLOv8分类/分割封装  
-│   ├── resnet.py                    # ResNet50二分类（拆分）  
-│   ├── yolo_detect.py               # YOLOv8检测（拆分）  
-│   └── __init__.py  
-├── configs/                         # 任务配置  
-│   ├── detect.yaml                  # YOLOv8检测数据配置（Roboflow/YOLOv8）  
-│   ├── classify.yaml                # 分类训练参数模板  
-│   └── seg.yaml                     # 分割任务模板（预留）  
-├── scripts/                         # 数据/评测/导出与训练脚本  
-│   ├── convert_detect_to_cls.py     # 检测标注派生分类数据  
-│   ├── evaluate_detect_as_cls.py    # 检测模型用于图像级分类评测  
-│   ├── export_onnx.py               # 导出ONNX  
-│   └── train_detect.py              # YOLOv8检测训练（可选）  
-├── data/                            # 原始/示例数据集目录  
-├── checkpoints/                     # 训练保存的模型权重  
-├── runs/                            # 训练日志与结果  
-├── docs/                            # 独立文档（安装、数据、基准、桌面版）  
-├── train.py                         # 集成训练入口（含检测与分类）  
-├── detect.py                        # 裂缝检测推理脚本  
-├── app.py                           # GUI界面  
-├── requirements.txt                 # 项目依赖  
-└── README.md                        # 项目说明（面向用户路径）  
-
-
-## 🚀 快速开始
-
-### YOLOv8检测训练（推荐）
-
-使用 `train.py` 直接进行检测训练，无需 `train_yolo.py`：
-
-```sh
-# GPU（自动选择可用设备）
-python train.py \
-  --use_yolov8_detect \
-  --detect_data configs/detect.yaml \
-  --detect_model yolov8n.pt \
-  --detect_epochs 100 \
-  --detect_imgsz 640 \
-  --detect_project runs/detect \
-  --detect_name crack_yolov8
-
-# CPU
-python train.py \
-  --use_yolov8_detect \
-  --detect_data configs/detect.yaml \
-  --detect_model yolov8n.pt \
-  --detect_epochs 100 \
-  --detect_imgsz 640
-```
-
-- 训练完成后：最佳权重会自动复制到 `checkpoints/best_yolov8_detect.pt`
-- 可选：使用 `scripts/train_detect.py --data configs/detect.yaml --model yolov8n.pt` 启动检测训练
-- 原有分类训练入口保持不变：`python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained`
-
-### ResNet50分类训练（传统方法）
-
-```sh
-python train.py --data_dir data --batch_size 32 --epochs 50 --pretrained
-```
-
-### 裂缝检测推理
-
-1. **图像检测**
-
-```sh
-python detect.py --source image.jpg --weights checkpoints/best_yolov8_detect.pt --conf 0.5
-```
-检测结果：
-![detect.png](docs%2Fimg%2Fdetect.png)
-2. **图像分割**
-
-```shell
-python detect.py --source path/to.jpg --weights checkpoints/best_yolov8_seg.pt --task segment
-```
-分割结果：
-![segment.jpg](docs%2Fimg%2Fsegment.jpg)
-
-
-3. **视频检测**
-
-```sh
-python detect.py --source video.mp4 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
-```
-检测结果：
-
-
-![detect.gif](docs%2Fimg%2Fdetect.gif)
-
-
-4. **实时摄像头检测（待开发）**
-
-```sh
-python detect.py --source 0 --weights checkpoints/best_yolov8_detect.pt --conf 0.5
-```
-
-### GUI界面
-
-```sh
-python app.py
-```
-在GUI界面可以进行裂缝二分类、检测和分割的操作
-![GUI.png](docs%2Fimg%2FGUI.png)
-
-
-## 🧩 模型与对比（概览）
-
-- 检测：YOLOv8（定位与边界框）。
-- 分类：ResNet50（有/无裂缝判断）。
-- 详细架构与对比请见 `docs/benchmark.md`。
-
-## 📈 性能评估
-
-### 训练监控
-
-```sh
-tensorboard --logdir runs
-```
-
-### 评估指标
-
-- **YOLOv8**: mAP@0.5, mAP@0.5:0.95, 精确率, 召回率
-- **ResNet50**: 准确率, F1-score, 混淆矩阵
-- 损失曲线, 学习率变化
-
-
-## 🛠️ 开发指南（简版）
-
-### 扩展新模型
-
-开发细则与分支策略请参阅 `CONTRIBUTING.md`。
-
-## 🎯 应用场景（概览）
-
-- 建筑、道路、桥梁裂缝检测（YOLOv8）
-- 快速裂缝存在性判断（ResNet50）
-
-## 🤝 贡献指南
-
-我们欢迎任何形式的贡献！详细规范见 `contributing.md`。版本更新历史请参阅 `changelog.md`。
-
-### 分支策略
-
-- `master`: 稳定版本（当前为ResNet50）
-- `detect`: YOLOv8开发分支
-- `feature/*`: 功能开发分支
-
-### 贡献流程
-
-1. Fork 本仓库
-2. 创建特性分支: `git checkout -b feature/AmazingFeature`
-3. 提交更改: `git commit -m 'Add some AmazingFeature'`
-4. 推送到分支: `git push origin feature/AmazingFeature`
-5. 开启Pull Request
-
-## 📝 更新日志
-
-完整的版本更新记录请查看 `changelog.md`。
-
-##  许可证
-
-本项目采用 Apache 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🙏 致谢
-
-感谢以下开源项目的支持：
-
-- [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) - 先进的目标检测框架
-- [PyTorch](https://pytorch.org/) - 深度学习框架
-- [OpenCV](https://opencv.org/) - 计算机视觉库
-
-## 📞 联系我们
-
-- **项目维护者**: [Reol2020]
-- **邮箱**: [Reol42195@gmail163.com]
-- **项目地址**: [https://gitee.com/Reol2022/SmartTunnel-CrackDetector]
-- **当前主要分支**: `detect`
-
-## ⭐ 支持项目
-
-如果这个项目对您有帮助，请给我们一个 ⭐ Star！这是对我们最大的鼓励。
+</div>
 
 ---
 
-**注意**: 项目当前主要开发在 `detect` 分支，YOLOv8版本仍在积极开发中。ResNet50版本保持在 `master` 分支作为稳定版本。
+## 📖 分支简介 (Branch Introduction)
 
+本分支 (`feature/anomaly-detection`) 是 `CrackDetector` 项目的实验性分支，专注于探索 **无监督学习 (Unsupervised Learning)** 在隧道及交通基础设施缺陷检测中的应用。
 
-## 🖼️ 结果示例
+与主分支（Master）基于 YOLO 的监督学习不同，本分支采用 **PatchCore** 算法，解决了隧道场景下**负样本（缺陷数据）稀缺**和**缺陷形态不可预测**（如不规则裂缝、渗水、剥落）的痛点。
 
-- 检测结果示例：`runs/detect/train_crack/val_batch0_pred.jpg`
-- 训练批次示例：`runs/detect/train_crack/train_batch0.jpg`
-- 视频帧示例：通过 `detect.py --source video.mp4` 推理后手工保存帧图（示例帧可在脚本中使用 OpenCV 保存）
+### ✨ 核心特性
 
-## ❓ 常见问题
+* **🧠 无监督驱动**: 仅需少量**正常（无缺陷）**图片即可训练，无需费力标注裂缝框。
+* **🔥 PatchCore 算法**: 引入先进的特征记忆库机制，实现 SOTA 级别的异常检测精度。
+* **🎯 像素级定位**: 输出高分辨率的热力图 (Heatmap) 和分割掩码 (Segmentation Mask)。
+* **🚀 边缘适配 (进行中)**: 探索 MobileNet/EfficientNet 轻量化骨干网络，适配隧道巡检机器人。
+* **🏗️ 复杂环境鲁棒性**: 针对隧道暗光、管片拼接缝、水渍等干扰进行了专门优化。
 
-- 未安装 Ultralytics：执行 `pip install ultralytics`
-- 权重路径不一致：训练后权重复制到 `checkpoints/best_yolov8_detect.pt`
-- detect.yaml 路径：请使用 `configs/detect.yaml`
-- GPU 不可用：传入 `--device cpu` 或确保 CUDA 驱动正确
+---
 
-更多问题详见[docs/question.md](docs/question.md)
+## 🏗️ 架构对比
 
+| 特性 | 主分支 (`master`) | **当前分支 (`feature/anomaly-detection`)** |
+| --- | --- | --- |
+| **核心模型** | YOLOv8 / ResNet50 | **PatchCore / Padim (via Anomalib)** |
+| **学习方式** | 全监督 (Supervised) | **无监督 (Unsupervised)** |
+| **数据要求** | 需要大量画框标注 | **仅需正常图片 (少量故障图用于测试)** |
+| **检测目标** | 已知类别 (裂缝) | **未知异常 (裂缝、渗水、异物等)** |
+| **输出结果** | 边界框 (BBox) | **热力图 (Heatmap) & 异常评分** |
+
+---
+
+## 🛠️ 环境准备
+
+本分支依赖 `anomalib` 库。请确保在虚拟环境中安装：
+
+```bash
+# 基础依赖
+pip install -r requirements.txt
+
+# 安装异常检测核心库
+pip install anomalib
+
+# (可选) 如果需要处理旧数据
+pip install opencv-python tqdm
+
+```
+
+---
+
+## 📂 数据准备 (Data Preparation)
+
+本分支使用全新的数据结构。请在 `data/` 目录下创建 `tunnel_anomaly` 文件夹，并严格按照以下结构放置图片：
+
+```text
+data/tunnel_anomaly/
+├── train/
+│   └── good/              # 【训练集】只放正常的隧道/混凝土壁面图
+│       ├── ttd_norm_001.jpg
+│       └── ...
+│
+├── test/
+│   ├── good/              # (可选) 测试用的好图
+│   └── crack/             # 【测试集】放包含裂缝、渗水等异常的图
+│       ├── ttd_crack_001.jpg
+│       └── ...
+│
+└── ground_truth/          # (可选) 对应的像素级掩码，用于计算 Pixel-AUC
+    └── crack/
+        ├── ttd_crack_001_mask.png
+        └── ...
+
+```
+
+> **提示**: 如果您只有旧的 YOLO/分类数据集，请使用 `scripts/convert_detect_to_cls.py` 或 `rename_data.py` 脚本进行转换和清洗。
+
+---
+
+## 🚀 快速开始 (Quick Start)
+
+### 1. 配置模型
+
+项目根目录下已预置配置文件 `configs/patchcore.yaml`。
+
+* 默认骨干网络：`wide_resnet50_2` (高精度)
+* 轻量化尝试：可修改为 `mobilenet_v3_large`
+
+### 2. 启动训练
+
+无需编写复杂代码，一行命令即可启动：
+
+```bash
+anomalib train --config configs/patchcore.yaml
+
+```
+
+### 3. 查看结果
+
+训练完成后，结果将保存在 `results/` 目录下：
+
+```text
+results/
+└── patchcore/
+    └── tunnel_custom/
+        └── latest/
+            ├── images/       # 包含原图与热力图的叠加对比
+            └── logs/         # 训练日志
+
+```
+
+---
+
+## 🖼️ 可视化结果预期
+
+成功运行后，您将获得如下形式的异常定位图：
+
+| 原始输入 (Input) | 异常热力图 (Heatmap) | 分割结果 (Segmentation) |
+| --- | --- | --- |
+| *(隧道壁原图)* | *(红色高亮区域)* | *(裂缝二值化掩码)* |
+
+*(注：此处等待实验结果补充截图)*
+
+---
+
+## 📝 开发计划 (To-Do)
+
+* [x] 搭建 Anomalib 环境与 PatchCore 基准
+* [ ] 数据集清洗与标准化 (TTD + FY387)
+* [ ] **实验一**: 验证 ResNet50 在隧道场景下的有效性 (Baseline)
+* [ ] **实验二**: 替换 MobileNet/EfficientNet 进行轻量化对比
+* [ ] **实验三**: 引入光照增强预处理 (Gamma/Retinex)
+* [ ] 导出 ONNX 模型并部署测试
+
+---
+
+## 🤝 贡献与反馈
+
+本分支是科研实验性质，欢迎提交 Issue 讨论关于 "Unsupervised Defect Detection" 的想法。
+
+* **Author**: Reol2020
+* **Focus**: AI for Civil Engineering (Tunnel Inspection)
+
+---
