@@ -8,7 +8,7 @@
 #     └── crack-seg  ← downloads here (91.6 MB)
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: data/crack-seg
+path: E:/我的项目/研究生/CrackDetector/data/crack-seg
 train: images/train # train images (relative to 'path') 3717 images
 val: images/val # val images (relative to 'path') 112 images
 test: images/test # test images (relative to 'path') 200 images
